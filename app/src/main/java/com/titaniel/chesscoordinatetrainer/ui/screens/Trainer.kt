@@ -40,7 +40,7 @@ class TrainerViewModel @Inject constructor() : ViewModel() {
     /**
      * Current board orientation
      */
-    private val _frontColor: MutableLiveData<ChessColor> = MutableLiveData(ChessColor.BLACK)
+    private val _frontColor: MutableLiveData<ChessColor> = MutableLiveData(ChessColor.WHITE)
     val frontColor: LiveData<ChessColor> = _frontColor
 
     init {
