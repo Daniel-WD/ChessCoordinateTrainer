@@ -33,7 +33,7 @@ fun ChessBoard(boardColorFront: ChessColor = ChessColor.BLACK, onTileClick: (Str
             Row {
                 xAxis.forEachIndexed { j, xChar ->
 
-                    BoardTile(type = if((j+i) % 2 == 0) ChessColor.WHITE else ChessColor.BLACK, yChar+xChar, onTileClick)
+                    BoardTile(type = if((j+i) % 2 == 0) ChessColor.WHITE else ChessColor.BLACK, xChar+yChar, onTileClick)
                 }
             }
         }

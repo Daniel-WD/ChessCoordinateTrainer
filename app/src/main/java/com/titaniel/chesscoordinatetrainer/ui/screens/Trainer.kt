@@ -41,13 +41,46 @@ class TrainerViewModel @Inject constructor() : ViewModel() {
     /**
      * Current board orientation
      */
-    private val _frontColor: MutableLiveData<ChessColor> = MutableLiveData()
+    private val _frontColor: MutableLiveData<ChessColor> = MutableLiveData(ChessColor.BLACK)
     val frontColor: LiveData<ChessColor> = _frontColor
 
+    init {
+        refreshSearchedTile()
+    }
+
     /**
-     *
+     * Refreshes value of [_searchedTile]
+     */
+    private fun refreshSearchedTile() {
+        _searchedTile.value = randomChessNotation(_searchedTile.value)
+    }
+
+    /**
+     * Returns random chess notation
+     */
+    private fun randomChessNotation(previous: String? = null): String {
+
+        // Calc random x axis value
+        val xValue = ('a'..'h').map { it.toString() }.random()
+
+        // Calc random y axis value
+        val yValue = (1..8).map { it.toString() }.random()
+
+        // Return combined values
+        return (xValue+yValue).let { if(it == previous) randomChessNotation(previous) else it }
+    }
+
+    /**
+     * Refreshes searched notation if [notation] equals it. Otherwise does nothing.
      */
     fun onTileClicked(notation: String) {
+
+        // If notation is correct...
+        if(_searchedTile.value == notation) {
+
+            // Set new notation
+            refreshSearchedTile()
+        }
 
     }
 
