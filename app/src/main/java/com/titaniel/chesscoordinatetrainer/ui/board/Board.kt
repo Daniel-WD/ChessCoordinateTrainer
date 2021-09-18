@@ -18,7 +18,7 @@ enum class ChessColor {
 }
 
 @Composable
-fun ChessBoard(boardColorFront: ChessColor = ChessColor.BLACK) {
+fun ChessBoard(boardColorFront: ChessColor = ChessColor.BLACK, onTileClick: (String) -> Unit = {}) {
 
     val xAxis = ('a'..'h').let { if(boardColorFront == ChessColor.BLACK) it.reversed() else it } .map { it.toString() }
 
@@ -33,7 +33,7 @@ fun ChessBoard(boardColorFront: ChessColor = ChessColor.BLACK) {
             Row {
                 xAxis.forEachIndexed { j, xChar ->
 
-                    BoardTile(type = if((j+i) % 2 == 0) ChessColor.WHITE else ChessColor.BLACK, yChar+xChar) {}
+                    BoardTile(type = if((j+i) % 2 == 0) ChessColor.WHITE else ChessColor.BLACK, yChar+xChar, onTileClick)
                 }
             }
         }
@@ -63,5 +63,5 @@ fun BoardTile(type: ChessColor, notation: String, onClick: (String) -> Unit) {
 @Preview(showBackground = true)
 @Composable
 fun BoardPreview() {
-    ChessBoard(ChessColor.BLACK)
+    ChessBoard()
 }
