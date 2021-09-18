@@ -2,7 +2,6 @@ package com.titaniel.chesscoordinatetrainer.ui.screens
 
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.fillMaxSize
-import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.material.Text
 import androidx.compose.runtime.Composable
@@ -67,7 +66,7 @@ class TrainerViewModel @Inject constructor() : ViewModel() {
         val yValue = (1..8).map { it.toString() }.random()
 
         // Return combined values
-        return (xValue+yValue).let { if(it == previous) randomChessNotation(previous) else it }
+        return (xValue + yValue).let { if (it == previous) randomChessNotation(previous) else it }
     }
 
     /**
@@ -76,7 +75,7 @@ class TrainerViewModel @Inject constructor() : ViewModel() {
     fun onTileClicked(notation: String) {
 
         // If notation is correct...
-        if(_searchedTile.value == notation) {
+        if (_searchedTile.value == notation) {
 
             // Set new notation
             refreshSearchedTile()
@@ -106,38 +105,52 @@ fun TrainerWrapper(
     Column(modifier = Modifier.fillMaxSize()) {
 
         Text(
-            modifier = Modifier.padding(16.dp),
+            modifier = Modifier
+                .padding(top = 16.dp, start = 16.dp)
+                .weight(0.15f),
             text = stringResource(id = R.string.app_name),
-            fontWeight = FontWeight.Medium
+            fontWeight = FontWeight.Medium,
+            fontSize = 18.sp
         )
 
         Column(
             modifier = Modifier
-                .fillMaxWidth()
-                .padding(top = 50.dp), horizontalAlignment = Alignment.CenterHorizontally
+                .fillMaxSize()
+                .weight(0.85f), horizontalAlignment = Alignment.CenterHorizontally
         ) {
 
-            Text(text = searchedTile, fontWeight = FontWeight.Medium, fontSize = 40.sp)
-
             Text(
-                modifier = Modifier.padding(top = 20.dp, bottom = 20.dp),
-                text = when (boardColorFront) {
-                    ChessColor.BLACK -> stringResource(R.string.trainer_color_white)
-                    else -> stringResource(R.string.trainer_color_black)
-                },
-                fontSize = 28.sp
+                text = searchedTile,
+                fontWeight = FontWeight.Medium,
+                fontSize = 40.sp
             )
 
-            ChessBoard(boardColorFront, onTileClicked)
+            Column(
+                modifier = Modifier.padding(top = 24.dp),
+                horizontalAlignment = Alignment.CenterHorizontally
+            ) {
 
-            Text(
-                modifier = Modifier.padding(top = 20.dp),
-                text = when (boardColorFront) {
-                    ChessColor.BLACK -> stringResource(id = R.string.trainer_color_black)
-                    else -> stringResource(id = R.string.trainer_color_white)
-                },
-                fontSize = 28.sp
-            )
+                Text(
+                    modifier = Modifier.padding(bottom = 10.dp),
+                    text = when (boardColorFront) {
+                        ChessColor.BLACK -> stringResource(R.string.trainer_color_white)
+                        else -> stringResource(R.string.trainer_color_black)
+                    },
+                    fontSize = 28.sp
+                )
+
+                ChessBoard(boardColorFront, onTileClicked)
+
+                Text(
+                    modifier = Modifier.padding(top = 10.dp),
+                    text = when (boardColorFront) {
+                        ChessColor.BLACK -> stringResource(id = R.string.trainer_color_black)
+                        else -> stringResource(id = R.string.trainer_color_white)
+                    },
+                    fontSize = 28.sp
+                )
+            }
+
         }
 
     }
