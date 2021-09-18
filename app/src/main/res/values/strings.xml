@@ -1,3 +1,4 @@
 <resources>
-    <string name="app_name">ChessCoordinateTrainer</string>
+    <string name="app_name">Chess Coordinate Trainer</string>
+    <string name="menu_btn_start">START</string>
 </resources>
