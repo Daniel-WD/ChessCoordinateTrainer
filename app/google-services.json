@@ -1,0 +1,40 @@
+{
+  "project_info": {
+    "project_number": "71431420677",
+    "firebase_url": "https://chess-coordinate-trainer-default-rtdb.europe-west1.firebasedatabase.app",
+    "project_id": "chess-coordinate-trainer",
+    "storage_bucket": "chess-coordinate-trainer.appspot.com"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:71431420677:android:7fefb56302a0d3e116156c",
+        "android_client_info": {
+          "package_name": "com.titaniel.chesscoordinatetrainer"
+        }
+      },
+      "oauth_client": [
+        {
+          "client_id": "71431420677-preqbvk905jemh58dna55m3m6332itvo.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
+      "api_key": [
+        {
+          "current_key": "AIzaSyCYYb5THeqVQyGrwRhxs6ZikYY8dhyFzUE"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": [
+            {
+              "client_id": "71431420677-preqbvk905jemh58dna55m3m6332itvo.apps.googleusercontent.com",
+              "client_type": 3
+            }
+          ]
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}

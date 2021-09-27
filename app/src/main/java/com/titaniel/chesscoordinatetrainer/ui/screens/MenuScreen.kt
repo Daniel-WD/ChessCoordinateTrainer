@@ -1,7 +1,6 @@
 package com.titaniel.chesscoordinatetrainer.ui.screens
 
 import androidx.compose.foundation.Image
-import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.*
 import androidx.compose.material.Text
 import androidx.compose.material.TextButton
@@ -40,12 +39,12 @@ class MenuViewModel @Inject constructor() : ViewModel() {
 }
 
 @Composable
-fun Menu(viewModel: MenuViewModel = viewModel()) {
-    MenuWrapper(viewModel::start)
+fun MenuWrapper(viewModel: MenuViewModel = viewModel()) {
+    MenuScreen(viewModel::start)
 }
 
 @Composable
-fun MenuWrapper(start: () -> Unit) {
+fun MenuScreen(start: () -> Unit) {
     Column(modifier = Modifier.fillMaxSize(), horizontalAlignment = Alignment.CenterHorizontally) {
 
         Image(
@@ -54,7 +53,11 @@ fun MenuWrapper(start: () -> Unit) {
             contentDescription = null
         )
 
-        Text(text = stringResource(id = R.string.app_name), fontSize = 28.sp, fontWeight = FontWeight.Medium)
+        Text(
+            text = stringResource(id = R.string.app_name),
+            fontSize = 28.sp,
+            fontWeight = FontWeight.Medium
+        )
 
         Spacer(modifier = Modifier.height(50.dp))
 
@@ -63,7 +66,11 @@ fun MenuWrapper(start: () -> Unit) {
         Spacer(modifier = Modifier.height(50.dp))
 
         TextButton(onClick = start) {
-            Text(text = stringResource(R.string.menu_btn_start), color = Color.Black, fontSize = 32.sp)
+            Text(
+                text = stringResource(R.string.menu_btn_start),
+                color = Color.Black,
+                fontSize = 32.sp
+            )
         }
     }
 }
@@ -72,6 +79,6 @@ fun MenuWrapper(start: () -> Unit) {
 @Composable
 fun MenuPreview() {
     ChessCoordinateTrainerTheme {
-        MenuWrapper {}
+        MenuScreen {}
     }
 }
