@@ -3,4 +3,8 @@
     <string name="menu_btn_start">START</string>
     <string name="trainer_color_white">White</string>
     <string name="trainer_color_black">Black</string>
+    <string name="feedback_confirm">Send</string>
+    <string name="feedback_dismiss">Cancel</string>
+    <string name="feedback_title">Feature Request</string>
+    <string name="feedback_hint">I want…</string>
 </resources>
