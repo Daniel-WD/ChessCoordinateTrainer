@@ -26,6 +26,7 @@ import androidx.lifecycle.viewModelScope
 import androidx.lifecycle.viewmodel.compose.viewModel
 import com.titaniel.chesscoordinatetrainer.R
 import com.titaniel.chesscoordinatetrainer.feedback.FeedbackManager
+import com.titaniel.chesscoordinatetrainer.notification.PushNotificationManager
 import com.titaniel.chesscoordinatetrainer.ui.board.ChessBoard
 import com.titaniel.chesscoordinatetrainer.ui.board.ChessColor
 import com.titaniel.chesscoordinatetrainer.ui.dialogs.FeedbackDialog
@@ -41,7 +42,8 @@ import javax.inject.Inject
  */
 @HiltViewModel
 class TrainerViewModel @Inject constructor(
-    val feedbackManager: FeedbackManager
+    private val feedbackManager: FeedbackManager,
+    private val notificationManager: PushNotificationManager
 ) : ViewModel() {
 
     companion object {
@@ -85,6 +87,8 @@ class TrainerViewModel @Inject constructor(
      * Refreshes value of [_searchedTile]
      */
     private fun refreshSearchedTile() {
+
+        // Set new notation
         _searchedTile.value = randomChessNotation(_searchedTile.value)
     }
 
@@ -159,6 +163,8 @@ class TrainerViewModel @Inject constructor(
 
         // Show feedback dialog
         _feedbackDialogOpen.value = true
+
+        notificationManager.sendNotification()
 
     }
 
