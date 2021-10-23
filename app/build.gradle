@@ -55,6 +55,9 @@ android {
 
 dependencies {
 
+    // System UI color change utils
+    implementation "com.google.accompanist:accompanist-systemuicontroller:0.20.0"
+
     implementation("androidx.work:work-runtime-ktx:2.7.0")
 
     implementation platform('com.google.firebase:firebase-bom:28.4.1')
