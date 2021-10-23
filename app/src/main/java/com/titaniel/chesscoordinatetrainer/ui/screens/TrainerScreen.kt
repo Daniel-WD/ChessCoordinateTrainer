@@ -1,9 +1,6 @@
 package com.titaniel.chesscoordinatetrainer.ui.screens
 
-import androidx.compose.foundation.layout.Box
-import androidx.compose.foundation.layout.Column
-import androidx.compose.foundation.layout.fillMaxSize
-import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.*
 import androidx.compose.material.Icon
 import androidx.compose.material.IconButton
 import androidx.compose.material.Text
@@ -162,6 +159,16 @@ class TrainerViewModel @Inject constructor(
 
     }
 
+    /**
+     * Changes board rotation
+     */
+    fun onRotationChange() {
+
+        // Change front color
+        _frontColor.value = if(_frontColor.value == ChessColor.BLACK) ChessColor.WHITE else ChessColor.BLACK
+
+    }
+
 }
 
 @Composable
@@ -180,7 +187,8 @@ fun TrainerWrapper(viewModel: TrainerViewModel = viewModel()) {
         viewModel::onDismissFeedbackDialog,
         viewModel::onShowFeedbackDialog,
         viewModel::onSendFeedback,
-        thankYouDialogOpen
+        thankYouDialogOpen,
+        viewModel::onRotationChange
     )
 }
 
@@ -193,26 +201,41 @@ fun TrainerScreen(
     onDismissFeedbackDialog: () -> Unit,
     onShowFeedbackDialog: () -> Unit,
     onConfirmFeedback: (String) -> Unit,
-    thankYouDialogOpen: Boolean
+    thankYouDialogOpen: Boolean,
+    onRotationChange: () -> Unit
 ) {
 
     Box(modifier = Modifier.fillMaxSize()) {
 
-        Column(modifier = Modifier.fillMaxSize()) {
+        Column(modifier = Modifier.fillMaxSize().padding(bottom = 40.dp)) {
 
-            Text(
+            Row(
                 modifier = Modifier
-                    .padding(top = 16.dp, start = 16.dp)
-                    .weight(0.15f),
-                text = stringResource(id = R.string.app_name),
-                fontWeight = FontWeight.Medium,
-                fontSize = 18.sp
-            )
+                    .padding(start = 16.dp)
+                    .height(56.dp)
+                    .fillMaxWidth(),
+                horizontalArrangement = Arrangement.SpaceBetween,
+                verticalAlignment = Alignment.CenterVertically
+            ) {
+                Text(
+                    text = stringResource(id = R.string.app_name),
+                    fontWeight = FontWeight.Medium,
+                    fontSize = 18.sp
+                )
+
+                IconButton(onClick = onRotationChange) {
+                    Icon(
+                        painterResource(id = R.drawable.ic_baseline_settings_backup_restore_24),
+                        contentDescription = null,
+                        tint = Color(0xFF8F8F8F)
+                    )
+                }
+            }
 
             Column(
                 modifier = Modifier
-                    .fillMaxSize()
-                    .weight(0.85f), horizontalAlignment = Alignment.CenterHorizontally
+                    .fillMaxSize(), horizontalAlignment = Alignment.CenterHorizontally,
+                verticalArrangement = Arrangement.Center
             ) {
 
                 Text(
@@ -289,7 +312,8 @@ fun TrainerPreview() {
             onDismissFeedbackDialog = {},
             onShowFeedbackDialog = {},
             onConfirmFeedback = {},
-            thankYouDialogOpen = false
+            thankYouDialogOpen = false,
+            onRotationChange = {}
         )
     }
 }
