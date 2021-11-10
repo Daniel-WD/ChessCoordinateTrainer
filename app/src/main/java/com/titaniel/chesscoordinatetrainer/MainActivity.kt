@@ -6,8 +6,6 @@ import androidx.activity.compose.setContent
 import androidx.compose.material.MaterialTheme
 import androidx.compose.material.Surface
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.SideEffect
-import androidx.compose.ui.graphics.Color
 import com.google.accompanist.systemuicontroller.rememberSystemUiController
 import com.titaniel.chesscoordinatetrainer.ui.screens.TrainerWrapper
 import com.titaniel.chesscoordinatetrainer.ui.theme.ChessCoordinateTrainerTheme
@@ -23,7 +21,7 @@ class MainActivity : ComponentActivity() {
                 // A surface container using the 'background' color from the theme
                 Surface(color = MaterialTheme.colors.background) {
 
-                    SetSystemUiColors()
+                    SetSystemUi()
 
                     TrainerWrapper()
 //                    ThankYou()
@@ -35,18 +33,24 @@ class MainActivity : ComponentActivity() {
 }
 
 @Composable
-fun SetSystemUiColors() {
+fun SetSystemUi() {
 
     // Get system ui controller
     val systemUiController = rememberSystemUiController()
 
-    SideEffect {
+    systemUiController.isSystemBarsVisible = false
 
-        // Set system bar color
-        systemUiController.setSystemBarsColor(color = Color(0xFFECECEC))
-
-        // Set navigation bar color
-        systemUiController.setNavigationBarColor(color = Color.White)
-    }
+//    val statusBarColor = if(MaterialTheme.colors.isLight) Color(0xFFECECEC) else Color(0xFF1A1A1A)
+//
+//    val backgroundColor = MaterialTheme.colors.background
+//
+//    SideEffect {
+//
+//        // Set system bar color
+//        systemUiController.setSystemBarsColor(color = statusBarColor)
+//
+//        // Set navigation bar color
+//        systemUiController.setNavigationBarColor(color = backgroundColor)
+//    }
 
 }

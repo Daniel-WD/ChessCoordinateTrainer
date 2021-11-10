@@ -3,6 +3,7 @@ package com.titaniel.chesscoordinatetrainer.ui.board
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
+import androidx.compose.material.MaterialTheme
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
@@ -25,7 +26,7 @@ fun ChessBoard(boardColorFront: ChessColor = ChessColor.BLACK, onTileClick: (Str
 
     Column(
         modifier = Modifier
-            .background(Color(0xFFE5E5E5))
+            .background(MaterialTheme.colors.onBackground.copy(alpha = 0.14f))
             .padding(6.dp)
     ) {
 
@@ -53,8 +54,8 @@ fun BoardTile(type: ChessColor, notation: String, onClick: (String) -> Unit) {
             .size(42.dp)
             .background(
                 when (type) {
-                    ChessColor.BLACK -> Color(0xFF989898)
-                    else -> Color.White
+                    ChessColor.BLACK -> if (MaterialTheme.colors.isLight) Color(0xFF989898) else MaterialTheme.colors.background
+                    else -> if (MaterialTheme.colors.isLight) Color.White else Color(0xFF5E5E5E)
                 }
             )
             .clickable {

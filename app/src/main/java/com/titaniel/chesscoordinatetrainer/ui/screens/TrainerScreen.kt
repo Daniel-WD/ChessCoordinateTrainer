@@ -3,6 +3,7 @@ package com.titaniel.chesscoordinatetrainer.ui.screens
 import androidx.compose.foundation.layout.*
 import androidx.compose.material.Icon
 import androidx.compose.material.IconButton
+import androidx.compose.material.MaterialTheme
 import androidx.compose.material.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
@@ -227,7 +228,7 @@ fun TrainerScreen(
                     Icon(
                         painterResource(id = R.drawable.ic_baseline_settings_backup_restore_24),
                         contentDescription = null,
-                        tint = Color(0xFF8F8F8F)
+                        tint = MaterialTheme.colors.onBackground.copy(alpha = 0.5f)
                     )
                 }
             }
@@ -282,7 +283,7 @@ fun TrainerScreen(
         ) {
             Icon(
                 painter = painterResource(id = R.drawable.ic_baseline_chat_bubble_24),
-                tint = Color(0xFFD4D4D4),
+                tint = MaterialTheme.colors.onBackground.copy(alpha = 0.20f),
                 contentDescription = null
             )
         }
