@@ -5,7 +5,6 @@ import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
 import androidx.compose.material.MaterialTheme
-import androidx.compose.material.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
@@ -108,7 +107,12 @@ fun BoardTile(type: ChessColor, notation: String, onClick: (String) -> Unit) {
     ) {
         pieceIdByNotation[notation]?.let { pieceId ->
 
-            Image(modifier = Modifier.padding(1.dp), painter = painterResource(id = pieceId), contentDescription = null)
+            Image(
+                modifier = Modifier
+                    .padding(1.dp),
+                painter = painterResource(id = pieceId),
+                contentDescription = null
+            )
         }
 
 //        Text(text = notation)

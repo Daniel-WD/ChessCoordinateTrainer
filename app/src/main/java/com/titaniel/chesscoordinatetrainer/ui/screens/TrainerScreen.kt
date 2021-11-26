@@ -10,7 +10,6 @@ import androidx.compose.runtime.getValue
 import androidx.compose.runtime.livedata.observeAsState
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
@@ -166,7 +165,8 @@ class TrainerViewModel @Inject constructor(
     fun onRotationChange() {
 
         // Change front color
-        _frontColor.value = if(_frontColor.value == ChessColor.BLACK) ChessColor.WHITE else ChessColor.BLACK
+        _frontColor.value =
+            if (_frontColor.value == ChessColor.BLACK) ChessColor.WHITE else ChessColor.BLACK
 
     }
 
@@ -208,7 +208,11 @@ fun TrainerScreen(
 
     Box(modifier = Modifier.fillMaxSize()) {
 
-        Column(modifier = Modifier.fillMaxSize().padding(bottom = 40.dp)) {
+        Column(
+            modifier = Modifier
+                .fillMaxSize()
+                .padding(bottom = 70.dp)
+        ) {
 
             Row(
                 modifier = Modifier
@@ -245,31 +249,9 @@ fun TrainerScreen(
                     fontSize = 40.sp
                 )
 
-                Column(
-                    modifier = Modifier.padding(top = 24.dp),
-                    horizontalAlignment = Alignment.CenterHorizontally
-                ) {
+                Spacer(modifier = Modifier.height(80.dp))
 
-                    Text(
-                        modifier = Modifier.padding(bottom = 10.dp),
-                        text = when (boardColorFront) {
-                            ChessColor.BLACK -> stringResource(R.string.trainer_color_white)
-                            else -> stringResource(R.string.trainer_color_black)
-                        },
-                        fontSize = 28.sp
-                    )
-
-                    ChessBoard(boardColorFront, onTileClicked)
-
-                    Text(
-                        modifier = Modifier.padding(top = 10.dp),
-                        text = when (boardColorFront) {
-                            ChessColor.BLACK -> stringResource(id = R.string.trainer_color_black)
-                            else -> stringResource(id = R.string.trainer_color_white)
-                        },
-                        fontSize = 28.sp
-                    )
-                }
+                ChessBoard(boardColorFront, onTileClicked)
 
             }
 
