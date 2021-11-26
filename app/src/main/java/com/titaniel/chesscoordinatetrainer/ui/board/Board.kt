@@ -5,14 +5,31 @@ import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
 import androidx.compose.material.MaterialTheme
+import androidx.compose.material.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.res.painterResource
+import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import com.titaniel.chesscoordinatetrainer.R
 
+
+/**
+ * Tile size
+ */
+private val TILE_SIZE = 42.dp
+
+/**
+ * Board border thickness
+ */
+private val BORDER_THICKNESS = 6.dp
+
+/**
+ * Chess color enum
+ */
 enum class ChessColor {
     BLACK,
     WHITE
@@ -57,7 +74,7 @@ private val pieceIdByNotation = mapOf(
 )
 
 @Composable
-fun ChessBoard(boardColorFront: ChessColor = ChessColor.BLACK, onTileClick: (String) -> Unit = {}) {
+fun ChessBoard(boardColorFront: ChessColor = ChessColor.BLACK, onTileClick: (String) -> Unit = {}, showCoordinateRulers: Boolean = false) {
 
     val xAxis = ('a'..'h').let { if (boardColorFront == ChessColor.BLACK) it.reversed() else it }
         .map { it.toString() }
@@ -65,26 +82,80 @@ fun ChessBoard(boardColorFront: ChessColor = ChessColor.BLACK, onTileClick: (Str
     val yAxis = (1..8).let { if (boardColorFront == ChessColor.WHITE) it.reversed() else it }
         .map { it.toString() }
 
-    Column(
-        modifier = Modifier
-            .background(MaterialTheme.colors.onBackground.copy(alpha = 0.15f))
-            .padding(6.dp)
-    ) {
+    Column {
 
-        yAxis.forEachIndexed { i, yChar ->
+        if(showCoordinateRulers) {
 
-            Row {
-                xAxis.forEachIndexed { j, xChar ->
+            Row(modifier = Modifier.padding(start = TILE_SIZE/2 + BORDER_THICKNESS)) {
 
-                    BoardTile(
-                        type = if ((j + i) % 2 == 0) ChessColor.WHITE else ChessColor.BLACK,
-                        xChar + yChar,
-                        onTileClick
-                    )
+                xAxis.forEach { letter ->
+
+                    Box(
+                        modifier = Modifier.size(width = TILE_SIZE, height = TILE_SIZE / 2 + 4.dp)
+                    ) {
+
+                        Text(
+                            modifier = Modifier.align(Alignment.Center),
+                            text = letter
+                        )
+                    }
+
+                }
+            }
+        } else {
+
+            // MVP HACK
+            Spacer(modifier = Modifier.height(TILE_SIZE / 2 + 4.dp))
+
+        }
+
+        Row {
+
+            if(showCoordinateRulers) {
+
+                Column(modifier = Modifier.padding(top = BORDER_THICKNESS)) {
+
+                    yAxis.forEach { number ->
+
+                        Box(
+                            modifier = Modifier.size(width = TILE_SIZE / 2, height = TILE_SIZE)
+                        ) {
+
+                            Text(
+                                modifier = Modifier.align(Alignment.Center),
+                                text = number
+                            )
+                        }
+
+                    }
+
+                }
+            }
+
+
+            Column(
+                modifier = Modifier
+                    .background(MaterialTheme.colors.onBackground.copy(alpha = 0.15f))
+                    .padding(BORDER_THICKNESS)
+            ) {
+
+                yAxis.forEachIndexed { i, yChar ->
+
+                    Row {
+                        xAxis.forEachIndexed { j, xChar ->
+
+                            BoardTile(
+                                type = if ((j + i) % 2 == 0) ChessColor.WHITE else ChessColor.BLACK,
+                                xChar + yChar,
+                                onTileClick
+                            )
+                        }
+                    }
                 }
             }
         }
     }
+
 
 }
 
@@ -92,7 +163,7 @@ fun ChessBoard(boardColorFront: ChessColor = ChessColor.BLACK, onTileClick: (Str
 fun BoardTile(type: ChessColor, notation: String, onClick: (String) -> Unit) {
     Box(
         modifier = Modifier
-            .size(42.dp)
+            .size(TILE_SIZE)
             .background(
                 when (type) {
                     ChessColor.BLACK -> if (MaterialTheme.colors.isLight) Color(0xFFCACACA) else Color(

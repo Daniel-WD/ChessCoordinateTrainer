@@ -63,6 +63,12 @@ class TrainerViewModel @Inject constructor(
     val frontColor: LiveData<ChessColor> = _frontColor
 
     /**
+     * If the coordinate rulers should be shown
+     */
+    private val _showCoordinateRulers = MutableLiveData(false)
+    val showCoordinateRulers: LiveData<Boolean> = _showCoordinateRulers
+
+    /**
      * If feedback dialog is shown
      */
     private val _feedbackDialogOpen = MutableLiveData(false)
@@ -160,13 +166,23 @@ class TrainerViewModel @Inject constructor(
     }
 
     /**
-     * Changes board rotation
+     * Toggles board rotation
      */
     fun onRotationChange() {
 
         // Change front color
         _frontColor.value =
             if (_frontColor.value == ChessColor.BLACK) ChessColor.WHITE else ChessColor.BLACK
+
+    }
+
+    /**
+     * Toggles coordinate rulers visibility
+     */
+    fun onShowCoordinateRulesChange() {
+
+        // Toggle visibility
+        _showCoordinateRulers.value = !checkNotNull(_showCoordinateRulers.value)
 
     }
 
@@ -179,6 +195,7 @@ fun TrainerWrapper(viewModel: TrainerViewModel = viewModel()) {
     val frontColor by viewModel.frontColor.observeAsState(ChessColor.BLACK)
     val feedbackDialogOpen by viewModel.feedbackDialogOpen.observeAsState(false)
     val thankYouDialogOpen by viewModel.thankYouDialogOpen.observeAsState(false)
+    val showCoordinateRulers by viewModel.showCoordinateRulers.observeAsState(false)
 
     TrainerScreen(
         searchedTile,
@@ -189,7 +206,9 @@ fun TrainerWrapper(viewModel: TrainerViewModel = viewModel()) {
         viewModel::onShowFeedbackDialog,
         viewModel::onSendFeedback,
         thankYouDialogOpen,
-        viewModel::onRotationChange
+        viewModel::onRotationChange,
+        showCoordinateRulers,
+        viewModel::onShowCoordinateRulesChange
     )
 }
 
@@ -203,8 +222,12 @@ fun TrainerScreen(
     onShowFeedbackDialog: () -> Unit,
     onConfirmFeedback: (String) -> Unit,
     thankYouDialogOpen: Boolean,
-    onRotationChange: () -> Unit
+    onRotationChange: () -> Unit,
+    showCoordinateRulers: Boolean,
+    onShowCoordinateRulersChange: () -> Unit
 ) {
+
+    val iconTint = MaterialTheme.colors.onBackground.copy(alpha = 0.5f)
 
     Box(modifier = Modifier.fillMaxSize()) {
 
@@ -228,12 +251,21 @@ fun TrainerScreen(
                     fontSize = 18.sp
                 )
 
-                IconButton(onClick = onRotationChange) {
-                    Icon(
-                        painterResource(id = R.drawable.ic_baseline_settings_backup_restore_24),
-                        contentDescription = null,
-                        tint = MaterialTheme.colors.onBackground.copy(alpha = 0.5f)
-                    )
+                Row {
+                    IconButton(onClick = onRotationChange) {
+                        Icon(
+                            painterResource(id = R.drawable.ic_baseline_settings_backup_restore_24),
+                            contentDescription = null,
+                            tint = iconTint
+                        )
+                    }
+                    IconButton(onClick = onShowCoordinateRulersChange) {
+                        Icon(
+                            painterResource(id = if (showCoordinateRulers) R.drawable.ic_baseline_visibility_off_24 else R.drawable.ic_baseline_visibility_24),
+                            contentDescription = null,
+                            tint = iconTint
+                        )
+                    }
                 }
             }
 
@@ -249,9 +281,9 @@ fun TrainerScreen(
                     fontSize = 40.sp
                 )
 
-                Spacer(modifier = Modifier.height(80.dp))
+                Spacer(modifier = Modifier.height(65.dp))
 
-                ChessBoard(boardColorFront, onTileClicked)
+                ChessBoard(boardColorFront, onTileClicked, showCoordinateRulers)
 
             }
 
@@ -296,7 +328,9 @@ fun TrainerPreview() {
             onShowFeedbackDialog = {},
             onConfirmFeedback = {},
             thankYouDialogOpen = false,
-            onRotationChange = {}
+            onRotationChange = {},
+            showCoordinateRulers = true,
+            onShowCoordinateRulersChange = {}
         )
     }
 }
