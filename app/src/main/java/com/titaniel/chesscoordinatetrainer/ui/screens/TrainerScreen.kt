@@ -23,6 +23,7 @@ import androidx.lifecycle.viewModelScope
 import androidx.lifecycle.viewmodel.compose.viewModel
 import com.titaniel.chesscoordinatetrainer.R
 import com.titaniel.chesscoordinatetrainer.feedback.FeedbackManager
+import com.titaniel.chesscoordinatetrainer.firebase_logging.FirebaseLogging
 import com.titaniel.chesscoordinatetrainer.ui.board.ChessBoard
 import com.titaniel.chesscoordinatetrainer.ui.board.ChessColor
 import com.titaniel.chesscoordinatetrainer.ui.dialogs.FeedbackDialog
@@ -38,7 +39,8 @@ import javax.inject.Inject
  */
 @HiltViewModel
 class TrainerViewModel @Inject constructor(
-    val feedbackManager: FeedbackManager
+    val feedbackManager: FeedbackManager,
+    val firebaseLogging: FirebaseLogging
 ) : ViewModel() {
 
     companion object {
@@ -111,12 +113,18 @@ class TrainerViewModel @Inject constructor(
      */
     fun onTileClicked(notation: String) {
 
-        // If notation is correct...
-        if (_searchedTile.value == notation) {
+        // If notation is searched one
+        val correct = _searchedTile.value == notation
+
+        // If correct
+        if (correct) {
 
             // Set new notation
             refreshSearchedTile()
         }
+
+        // Log event
+        firebaseLogging.logTileClicked(notation, correct)
 
     }
 
@@ -144,6 +152,9 @@ class TrainerViewModel @Inject constructor(
             _thankYouDialogOpen.value = false
         }
 
+        // Log feedback dialog send event
+        firebaseLogging.logFeedbackDialogSend(feedback)
+
     }
 
     /**
@@ -153,6 +164,9 @@ class TrainerViewModel @Inject constructor(
 
         // Dismiss dialog
         _feedbackDialogOpen.value = false
+
+        // Log feedback dialog dismiss event
+        firebaseLogging.logFeedbackDialogDismiss()
     }
 
     /**
@@ -163,6 +177,9 @@ class TrainerViewModel @Inject constructor(
         // Show feedback dialog
         _feedbackDialogOpen.value = true
 
+        // Log feedback dialog open event
+        firebaseLogging.logFeedbackDialogOpen()
+
     }
 
     /**
@@ -170,19 +187,30 @@ class TrainerViewModel @Inject constructor(
      */
     fun onRotationChange() {
 
-        // Change front color
-        _frontColor.value =
-            if (_frontColor.value == ChessColor.BLACK) ChessColor.WHITE else ChessColor.BLACK
+        // Calc new front color
+        val newFrontColor = if (_frontColor.value == ChessColor.BLACK) ChessColor.WHITE else ChessColor.BLACK
+
+        // Set new front color
+        _frontColor.value = newFrontColor
+
+        // Log rotation change
+        firebaseLogging.logRotationChange(newFrontColor)
 
     }
 
     /**
      * Toggles coordinate rulers visibility
      */
-    fun onShowCoordinateRulesChange() {
+    fun onShowCoordinateRulersChange() {
 
-        // Toggle visibility
-        _showCoordinateRulers.value = !checkNotNull(_showCoordinateRulers.value)
+        // Calc new rulers visibility
+        val newVisibility = !checkNotNull(_showCoordinateRulers.value)
+
+        // Set visibility
+        _showCoordinateRulers.value = newVisibility
+
+        // Log rulers visibility change
+        firebaseLogging.logCoordinateRulersVisibilityChange(newVisibility)
 
     }
 
@@ -208,7 +236,7 @@ fun TrainerWrapper(viewModel: TrainerViewModel = viewModel()) {
         thankYouDialogOpen,
         viewModel::onRotationChange,
         showCoordinateRulers,
-        viewModel::onShowCoordinateRulesChange
+        viewModel::onShowCoordinateRulersChange
     )
 }
 
