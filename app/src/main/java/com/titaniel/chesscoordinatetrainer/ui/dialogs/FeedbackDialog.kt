@@ -2,14 +2,12 @@ package com.titaniel.chesscoordinatetrainer.ui.dialogs
 
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.text.BasicTextField
-import androidx.compose.material.AlertDialog
-import androidx.compose.material.Icon
-import androidx.compose.material.Text
-import androidx.compose.material.TextButton
+import androidx.compose.material.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.SolidColor
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.TextStyle
@@ -52,13 +50,13 @@ fun FeedbackDialog(onConfirm: (String) -> Unit, onDismiss: () -> Unit) {
                         modifier = Modifier.size(24.dp),
                         painter = painterResource(id = R.drawable.ic_baseline_chat_bubble_24),
                         contentDescription = null,
-                        tint = Color.Black
+                        tint = MaterialTheme.colors.onSurface
                     )
                     Text(
                         modifier = Modifier.padding(top = 10.dp),
                         text = stringResource(R.string.feedback_title),
                         fontSize = 16.sp,
-                        color = Color.Black
+                        color = MaterialTheme.colors.onSurface
                     )
                 }
 
@@ -71,12 +69,13 @@ fun FeedbackDialog(onConfirm: (String) -> Unit, onDismiss: () -> Unit) {
                     onValueChange = { feedbackText = it },
                     decorationBox = {
                         if (feedbackText.isEmpty()) {
-                            Text(text = stringResource(R.string.feedback_hint))
+                            Text(text = stringResource(R.string.feedback_hint), color = MaterialTheme.colors.onSurface)
                         }
 
                         it()
                     },
-                    textStyle = TextStyle(fontSize = 14.sp)
+                    textStyle = TextStyle(fontSize = 14.sp, color = MaterialTheme.colors.onSurface),
+                    cursorBrush = SolidColor(MaterialTheme.colors.onSurface)
                 )
             }
         },
@@ -94,7 +93,7 @@ fun ThankYouDialog() {
                 text = "❤ Thank You! ❤",
                 fontWeight = FontWeight.Medium,
                 fontSize = 16.sp,
-                color = Color.Black,
+                color = MaterialTheme.colors.onBackground,
                 textAlign = TextAlign.Center
             )
         },
