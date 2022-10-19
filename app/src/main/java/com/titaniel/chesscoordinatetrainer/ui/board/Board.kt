@@ -2,6 +2,7 @@ package com.titaniel.chesscoordinatetrainer.ui.board
 
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
+import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
 import androidx.compose.material.MaterialTheme
@@ -86,13 +87,16 @@ fun ChessBoard(
     val yAxis = (1..8).let { if (boardColorFront == ChessColor.WHITE) it.reversed() else it }
         .map { it.toString() }
 
-    Column {
+    Column(modifier = Modifier.fillMaxWidth(), horizontalAlignment = Alignment.CenterHorizontally) {
 
+        if (showPieces.not()) SideIndicator(color = if (boardColorFront == ChessColor.BLACK) ChessColor.WHITE else ChessColor.BLACK)
+
+        val boxHeight = TILE_SIZE / 2 + 4.dp
         if (showCoordinateRulers) {
             Row(modifier = Modifier.padding(start = TILE_SIZE / 2 + BORDER_THICKNESS)) {
                 xAxis.forEach { letter ->
                     Box(
-                        modifier = Modifier.size(width = TILE_SIZE, height = TILE_SIZE / 2 + 4.dp)
+                        modifier = Modifier.size(width = TILE_SIZE, height = boxHeight)
                     ) {
 
                         Text(
@@ -103,8 +107,8 @@ fun ChessBoard(
                 }
             }
         } else {
-            // FIXME MVP HACK
-            Spacer(modifier = Modifier.height(TILE_SIZE / 2 + 4.dp))
+            // FIXME MVP hack to keep height stable
+            Spacer(modifier = Modifier.height(boxHeight))
         }
 
         Row {
@@ -146,6 +150,11 @@ fun ChessBoard(
                 }
             }
         }
+
+        if(showPieces.not()) {
+            Spacer(modifier = Modifier.height(boxHeight))
+            SideIndicator(color = boardColorFront)
+        }
     }
 
 
@@ -181,9 +190,19 @@ fun BoardTile(
                 contentDescription = null
             )
         }
-
-//        Text(text = notation)
     }
+}
+
+@Composable
+fun SideIndicator(
+    color: ChessColor
+) {
+    Box(
+        modifier = Modifier
+            .size(width = 100.dp, height = 10.dp)
+            .background(if (color == ChessColor.BLACK) Color.Black else Color.White)
+            .border(2.dp, Color.Black)
+    )
 }
 
 @Preview(showBackground = true)
