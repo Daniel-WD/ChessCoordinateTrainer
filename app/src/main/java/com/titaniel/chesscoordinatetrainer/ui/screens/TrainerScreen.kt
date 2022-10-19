@@ -71,6 +71,12 @@ class TrainerViewModel @Inject constructor(
     val showCoordinateRulers: LiveData<Boolean> = _showCoordinateRulers
 
     /**
+     * If pieces should be shown
+     */
+    private val _showPieces = MutableLiveData(true)
+    val showPieces: LiveData<Boolean> = _showPieces
+
+    /**
      * If feedback dialog is shown
      */
     private val _feedbackDialogOpen = MutableLiveData(false)
@@ -214,6 +220,13 @@ class TrainerViewModel @Inject constructor(
 
     }
 
+    /**
+     * Toggles pieces visibility
+     */
+    fun onShowPiecesChange() {
+        _showPieces.value = !checkNotNull(_showPieces.value)
+    }
+
 }
 
 @Composable
@@ -224,6 +237,7 @@ fun TrainerWrapper(viewModel: TrainerViewModel = viewModel()) {
     val feedbackDialogOpen by viewModel.feedbackDialogOpen.observeAsState(false)
     val thankYouDialogOpen by viewModel.thankYouDialogOpen.observeAsState(false)
     val showCoordinateRulers by viewModel.showCoordinateRulers.observeAsState(false)
+    val showPieces by viewModel.showPieces.observeAsState(true)
 
     TrainerScreen(
         searchedTile,
@@ -236,7 +250,9 @@ fun TrainerWrapper(viewModel: TrainerViewModel = viewModel()) {
         thankYouDialogOpen,
         viewModel::onRotationChange,
         showCoordinateRulers,
-        viewModel::onShowCoordinateRulersChange
+        viewModel::onShowCoordinateRulersChange,
+        showPieces,
+        viewModel::onShowPiecesChange
     )
 }
 
@@ -252,7 +268,9 @@ fun TrainerScreen(
     thankYouDialogOpen: Boolean,
     onRotationChange: () -> Unit,
     showCoordinateRulers: Boolean,
-    onShowCoordinateRulersChange: () -> Unit
+    onShowCoordinateRulersChange: () -> Unit,
+    showPieces: Boolean,
+    onShowPiecesChange: () -> Unit
 ) {
 
     val iconTint = MaterialTheme.colors.onBackground.copy(alpha = 0.5f)
@@ -280,6 +298,13 @@ fun TrainerScreen(
                 )
 
                 Row {
+                    IconButton(onClick = onShowPiecesChange) {
+                        Icon(
+                            painterResource(id = if (showPieces) R.drawable.ic_baseline_extension_off_24 else R.drawable.ic_baseline_extension_24),
+                            contentDescription = null,
+                            tint = iconTint
+                        )
+                    }
                     IconButton(onClick = onRotationChange) {
                         Icon(
                             painterResource(id = R.drawable.ic_baseline_settings_backup_restore_24),
@@ -311,7 +336,7 @@ fun TrainerScreen(
 
                 Spacer(modifier = Modifier.height(65.dp))
 
-                ChessBoard(boardColorFront, onTileClicked, showCoordinateRulers)
+                ChessBoard(boardColorFront, onTileClicked, showCoordinateRulers, showPieces)
 
             }
 
@@ -358,7 +383,9 @@ fun TrainerPreview() {
             thankYouDialogOpen = false,
             onRotationChange = {},
             showCoordinateRulers = true,
-            onShowCoordinateRulersChange = {}
+            onShowCoordinateRulersChange = {},
+            showPieces = false,
+            onShowPiecesChange = {}
         )
     }
 }

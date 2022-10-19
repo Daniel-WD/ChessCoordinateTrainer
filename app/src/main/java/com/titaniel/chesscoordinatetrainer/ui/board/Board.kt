@@ -74,7 +74,7 @@ private val pieceIdByNotation = mapOf(
 )
 
 @Composable
-fun ChessBoard(boardColorFront: ChessColor = ChessColor.BLACK, onTileClick: (String) -> Unit = {}, showCoordinateRulers: Boolean = false) {
+fun ChessBoard(boardColorFront: ChessColor = ChessColor.BLACK, onTileClick: (String) -> Unit = {}, showCoordinateRulers: Boolean = false, showPieces: Boolean = true) {
 
     val xAxis = ('a'..'h').let { if (boardColorFront == ChessColor.BLACK) it.reversed() else it }
         .map { it.toString() }
@@ -147,7 +147,8 @@ fun ChessBoard(boardColorFront: ChessColor = ChessColor.BLACK, onTileClick: (Str
                             BoardTile(
                                 type = if ((j + i) % 2 == 0) ChessColor.WHITE else ChessColor.BLACK,
                                 xChar + yChar,
-                                onTileClick
+                                onTileClick,
+                                showPieces
                             )
                         }
                     }
@@ -160,7 +161,7 @@ fun ChessBoard(boardColorFront: ChessColor = ChessColor.BLACK, onTileClick: (Str
 }
 
 @Composable
-fun BoardTile(type: ChessColor, notation: String, onClick: (String) -> Unit) {
+fun BoardTile(type: ChessColor, notation: String, onClick: (String) -> Unit, showAvailablePiece: Boolean) {
     Box(
         modifier = Modifier
             .size(TILE_SIZE)
@@ -176,8 +177,7 @@ fun BoardTile(type: ChessColor, notation: String, onClick: (String) -> Unit) {
                 onClick(notation)
             }
     ) {
-        pieceIdByNotation[notation]?.let { pieceId ->
-
+        if(showAvailablePiece) pieceIdByNotation[notation]?.let { pieceId ->
             Image(
                 modifier = Modifier
                     .padding(1.dp),
