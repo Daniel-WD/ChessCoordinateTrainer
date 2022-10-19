@@ -11,7 +11,6 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.res.painterResource
-import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import com.titaniel.chesscoordinatetrainer.R
@@ -74,7 +73,12 @@ private val pieceIdByNotation = mapOf(
 )
 
 @Composable
-fun ChessBoard(boardColorFront: ChessColor = ChessColor.BLACK, onTileClick: (String) -> Unit = {}, showCoordinateRulers: Boolean = false, showPieces: Boolean = true) {
+fun ChessBoard(
+    boardColorFront: ChessColor = ChessColor.BLACK,
+    onTileClick: (String) -> Unit = {},
+    showCoordinateRulers: Boolean = false,
+    showPieces: Boolean = true
+) {
 
     val xAxis = ('a'..'h').let { if (boardColorFront == ChessColor.BLACK) it.reversed() else it }
         .map { it.toString() }
@@ -84,12 +88,9 @@ fun ChessBoard(boardColorFront: ChessColor = ChessColor.BLACK, onTileClick: (Str
 
     Column {
 
-        if(showCoordinateRulers) {
-
-            Row(modifier = Modifier.padding(start = TILE_SIZE/2 + BORDER_THICKNESS)) {
-
+        if (showCoordinateRulers) {
+            Row(modifier = Modifier.padding(start = TILE_SIZE / 2 + BORDER_THICKNESS)) {
                 xAxis.forEach { letter ->
-
                     Box(
                         modifier = Modifier.size(width = TILE_SIZE, height = TILE_SIZE / 2 + 4.dp)
                     ) {
@@ -99,36 +100,26 @@ fun ChessBoard(boardColorFront: ChessColor = ChessColor.BLACK, onTileClick: (Str
                             text = letter
                         )
                     }
-
                 }
             }
         } else {
-
-            // MVP HACK
+            // FIXME MVP HACK
             Spacer(modifier = Modifier.height(TILE_SIZE / 2 + 4.dp))
-
         }
 
         Row {
-
-            if(showCoordinateRulers) {
-
+            if (showCoordinateRulers) {
                 Column(modifier = Modifier.padding(top = BORDER_THICKNESS)) {
-
                     yAxis.forEach { number ->
-
                         Box(
                             modifier = Modifier.size(width = TILE_SIZE / 2, height = TILE_SIZE)
                         ) {
-
                             Text(
                                 modifier = Modifier.align(Alignment.Center),
                                 text = number
                             )
                         }
-
                     }
-
                 }
             }
 
@@ -161,7 +152,12 @@ fun ChessBoard(boardColorFront: ChessColor = ChessColor.BLACK, onTileClick: (Str
 }
 
 @Composable
-fun BoardTile(type: ChessColor, notation: String, onClick: (String) -> Unit, showAvailablePiece: Boolean) {
+fun BoardTile(
+    type: ChessColor,
+    notation: String,
+    onClick: (String) -> Unit,
+    showAvailablePiece: Boolean
+) {
     Box(
         modifier = Modifier
             .size(TILE_SIZE)
@@ -177,7 +173,7 @@ fun BoardTile(type: ChessColor, notation: String, onClick: (String) -> Unit, sho
                 onClick(notation)
             }
     ) {
-        if(showAvailablePiece) pieceIdByNotation[notation]?.let { pieceId ->
+        if (showAvailablePiece) pieceIdByNotation[notation]?.let { pieceId ->
             Image(
                 modifier = Modifier
                     .padding(1.dp),
