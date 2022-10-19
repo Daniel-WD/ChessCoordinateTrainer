@@ -43,6 +43,9 @@ class FirebaseLogging @Inject constructor(@ApplicationContext context: Context) 
          */
         private const val EVENT_COORDINATE_RULERS_INVISIBLE = "coordinate_rulers_invisible"
 
+        private const val EVENT_PIECES_VISIBLE = "pieces_visible"
+        private const val EVENT_PIECES_INVISIBLE = "pieces_invisible"
+
         /**
          * Event to track feedback dialog open events
          */
@@ -114,6 +117,12 @@ class FirebaseLogging @Inject constructor(@ApplicationContext context: Context) 
         firebaseAnalytics.logEvent(
             if (visible) EVENT_COORDINATE_RULERS_VISIBLE else EVENT_COORDINATE_RULERS_INVISIBLE,
             null
+        )
+    }
+
+    fun logPiecesVisibilityChange(visible: Boolean) {
+        firebaseAnalytics.logEvent(
+            if (visible) EVENT_PIECES_VISIBLE else EVENT_PIECES_INVISIBLE, null
         )
     }
 

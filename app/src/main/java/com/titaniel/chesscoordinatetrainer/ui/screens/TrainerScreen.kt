@@ -220,11 +220,11 @@ class TrainerViewModel @Inject constructor(
 
     }
 
-    /**
-     * Toggles pieces visibility
-     */
     fun onShowPiecesChange() {
-        _showPieces.value = !checkNotNull(_showPieces.value)
+        _showPieces.value?.not()?.let {
+            _showPieces.value = it
+            firebaseLogging.logPiecesVisibilityChange(it)
+        }
     }
 
 }
