@@ -1,5 +1,8 @@
 package com.titaniel.chesscoordinatetrainer.ui.board
 
+import androidx.compose.animation.*
+import androidx.compose.animation.core.animateFloatAsState
+import androidx.compose.animation.core.tween
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
@@ -8,12 +11,16 @@ import androidx.compose.foundation.layout.*
 import androidx.compose.material.MaterialTheme
 import androidx.compose.material.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.getValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.rotate
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.tooling.preview.Preview
+import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
+import androidx.compose.ui.zIndex
 import com.titaniel.chesscoordinatetrainer.R
 
 
@@ -75,89 +82,178 @@ private val pieceIdByNotation = mapOf(
 
 @Composable
 fun ChessBoard(
-    boardColorFront: ChessColor = ChessColor.BLACK,
+    boardColorFront: ChessColor = ChessColor.WHITE,
     onTileClick: (String) -> Unit = {},
     showCoordinateRulers: Boolean = false,
     showPieces: Boolean = true
 ) {
 
-    val xAxis = ('a'..'h').let { if (boardColorFront == ChessColor.BLACK) it.reversed() else it }
-        .map { it.toString() }
+    val xAxis = ('a'..'h').map { it.toString() }
 
-    val yAxis = (1..8).let { if (boardColorFront == ChessColor.WHITE) it.reversed() else it }
-        .map { it.toString() }
+    val yAxis = (8 downTo 1).map { it.toString() }
 
-    Column(modifier = Modifier.fillMaxWidth(), horizontalAlignment = Alignment.CenterHorizontally) {
+    val rotation by animateFloatAsState(
+        targetValue = if (boardColorFront == ChessColor.BLACK) 180f else 0f,
+        animationSpec = tween(500)
+    )
 
-        if (showPieces.not()) SideIndicator(color = if (boardColorFront == ChessColor.BLACK) ChessColor.WHITE else ChessColor.BLACK)
+    Column(
+        modifier = Modifier
+            .fillMaxWidth(), horizontalAlignment = Alignment.CenterHorizontally
+    ) {
 
-        val boxHeight = TILE_SIZE / 2 + 4.dp
-        if (showCoordinateRulers) {
-            Row(modifier = Modifier.padding(start = TILE_SIZE / 2 + BORDER_THICKNESS)) {
-                xAxis.forEach { letter ->
-                    Box(
-                        modifier = Modifier.size(width = TILE_SIZE, height = boxHeight)
-                    ) {
+        val sideIndicatorSpacing = 12.dp
 
-                        Text(
-                            modifier = Modifier.align(Alignment.Center),
-                            text = letter
-                        )
-                    }
-                }
-            }
-        } else {
-            // FIXME MVP hack to keep height stable
-            Spacer(modifier = Modifier.height(boxHeight))
-        }
+        TopSideIndicator(
+            showPieces = showPieces,
+            boardColorFront = boardColorFront,
+            spacing = sideIndicatorSpacing
+        )
+
+        FilesIndicator(show = showCoordinateRulers, content = xAxis.let { if (boardColorFront == ChessColor.BLACK) it.reversed() else it })
 
         Row {
-            if (showCoordinateRulers) {
-                Column(modifier = Modifier.padding(top = BORDER_THICKNESS)) {
-                    yAxis.forEach { number ->
-                        Box(
-                            modifier = Modifier.size(width = TILE_SIZE / 2, height = TILE_SIZE)
-                        ) {
-                            Text(
-                                modifier = Modifier.align(Alignment.Center),
-                                text = number
-                            )
-                        }
-                    }
-                }
-            }
 
+            RanksIndicator(show = showCoordinateRulers, content = yAxis.let { if (boardColorFront == ChessColor.BLACK) it.reversed() else it })
 
-            Column(
-                modifier = Modifier
-                    .background(MaterialTheme.colors.onBackground.copy(alpha = 0.15f))
-                    .padding(BORDER_THICKNESS)
-            ) {
+            Board(
+                rotation = rotation,
+                xAxis = xAxis,
+                yAxis = yAxis,
+                onTileClick = onTileClick,
+                showPieces = showPieces
+            )
 
-                yAxis.forEachIndexed { i, yChar ->
-
-                    Row {
-                        xAxis.forEachIndexed { j, xChar ->
-
-                            BoardTile(
-                                type = if ((j + i) % 2 == 0) ChessColor.WHITE else ChessColor.BLACK,
-                                xChar + yChar,
-                                onTileClick,
-                                showPieces
-                            )
-                        }
-                    }
-                }
-            }
         }
 
-        if(showPieces.not()) {
-            Spacer(modifier = Modifier.height(boxHeight))
-            SideIndicator(color = boardColorFront)
-        }
+        BottomSideIndicator(
+            showPieces = showPieces,
+            boardColorFront = boardColorFront,
+            spacing = sideIndicatorSpacing
+        )
+
     }
 
 
+}
+
+@Composable
+fun SideIndicator(
+    chessColor: ChessColor
+) {
+    val color by animateColorAsState(targetValue = if (chessColor == ChessColor.BLACK) Color.Black else Color.White)
+    Box(
+        modifier = Modifier
+            .size(width = 100.dp, height = 10.dp)
+            .background(color)
+            .border(
+                if (MaterialTheme.colors.isLight) 2.dp else 1.5.dp,
+                if (MaterialTheme.colors.isLight) Color.Black else Color.White.copy(alpha = 0.8f)
+            )
+    )
+}
+
+@Composable
+fun TopSideIndicator(showPieces: Boolean, boardColorFront: ChessColor, spacing: Dp) {
+    AnimatedVisibility(
+        visible = showPieces.not(),
+        enter = expandVertically(),
+        exit = shrinkVertically()
+    ) {
+        Column {
+            SideIndicator(chessColor = if (boardColorFront == ChessColor.BLACK) ChessColor.WHITE else ChessColor.BLACK)
+            Spacer(modifier = Modifier.height(spacing))
+        }
+    }
+}
+
+@Composable
+fun BottomSideIndicator(showPieces: Boolean, boardColorFront: ChessColor, spacing: Dp) {
+    AnimatedVisibility(
+        visible = showPieces.not(),
+        enter = expandVertically(),
+        exit = shrinkVertically()
+    ) {
+        Column {
+            Spacer(modifier = Modifier.height(spacing))
+            SideIndicator(chessColor = boardColorFront)
+        }
+    }
+}
+
+@Composable
+fun FilesIndicator(show: Boolean, content: List<String>) {
+    AnimatedVisibility(
+        visible = show,
+        enter = fadeIn() + expandVertically(),
+        exit = fadeOut() + shrinkVertically()
+    ) {
+        Row(modifier = Modifier.padding(start = TILE_SIZE / 2 + BORDER_THICKNESS)) {
+            content.forEach { letter ->
+                Box(
+                    modifier = Modifier.size(width = TILE_SIZE, height = TILE_SIZE / 2 + 4.dp)
+                ) {
+                    Text(
+                        modifier = Modifier.align(Alignment.Center),
+                        text = letter
+                    )
+                }
+            }
+        }
+    }
+}
+
+@Composable
+fun RanksIndicator(show: Boolean, content: List<String>) {
+    AnimatedVisibility(
+        visible = show,
+        enter = fadeIn() + expandHorizontally(),
+        exit = fadeOut() + shrinkHorizontally()
+    ) {
+        Column(modifier = Modifier.padding(top = BORDER_THICKNESS)) {
+            content.forEach { number ->
+                Box(
+                    modifier = Modifier.size(width = TILE_SIZE / 2, height = TILE_SIZE)
+                ) {
+                    Text(
+                        modifier = Modifier.align(Alignment.Center),
+                        text = number
+                    )
+                }
+            }
+        }
+    }
+}
+
+@Composable
+fun Board(
+    rotation: Float,
+    xAxis: List<String>,
+    yAxis: List<String>,
+    onTileClick: (String) -> Unit,
+    showPieces: Boolean
+) {
+    Column(
+        modifier = Modifier
+            .rotate(rotation)
+            .background(MaterialTheme.colors.onBackground.copy(alpha = 0.15f))
+            .padding(BORDER_THICKNESS)
+    ) {
+        yAxis.forEachIndexed { i, yChar ->
+            Row {
+                xAxis.forEachIndexed { j, xChar ->
+
+                    BoardTile(
+                        if ((j + i) % 2 == 0) ChessColor.WHITE else ChessColor.BLACK,
+                        xChar + yChar,
+                        onTileClick,
+                        showPieces,
+                        -rotation
+                    )
+                }
+            }
+        }
+    }
 }
 
 @Composable
@@ -165,7 +261,8 @@ fun BoardTile(
     type: ChessColor,
     notation: String,
     onClick: (String) -> Unit,
-    showAvailablePiece: Boolean
+    showAvailablePiece: Boolean,
+    pieceRotation: Float
 ) {
     Box(
         modifier = Modifier
@@ -185,24 +282,13 @@ fun BoardTile(
         if (showAvailablePiece) pieceIdByNotation[notation]?.let { pieceId ->
             Image(
                 modifier = Modifier
+                    .rotate(pieceRotation)
                     .padding(1.dp),
                 painter = painterResource(id = pieceId),
                 contentDescription = null
             )
         }
     }
-}
-
-@Composable
-fun SideIndicator(
-    color: ChessColor
-) {
-    Box(
-        modifier = Modifier
-            .size(width = 100.dp, height = 10.dp)
-            .background(if (color == ChessColor.BLACK) Color.Black else Color.White)
-            .border(if(MaterialTheme.colors.isLight) 2.dp else 1.5.dp, if(MaterialTheme.colors.isLight) Color.Black else Color.White.copy(alpha = 0.8f))
-    )
 }
 
 @Preview(showBackground = true)
