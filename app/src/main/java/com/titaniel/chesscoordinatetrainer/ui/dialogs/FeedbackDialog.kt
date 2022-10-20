@@ -21,7 +21,6 @@ import com.titaniel.chesscoordinatetrainer.R
 @Composable
 fun FeedbackDialog(onConfirm: (String) -> Unit, onDismiss: () -> Unit) {
 
-    // Feedback text
     var feedbackText by remember { mutableStateOf("") }
 
     AlertDialog(
