@@ -201,7 +201,7 @@ fun SideIndicator(
         modifier = Modifier
             .size(width = 100.dp, height = 10.dp)
             .background(if (color == ChessColor.BLACK) Color.Black else Color.White)
-            .border(2.dp, Color.Black)
+            .border(if(MaterialTheme.colors.isLight) 2.dp else 1.5.dp, if(MaterialTheme.colors.isLight) Color.Black else Color.White.copy(alpha = 0.8f))
     )
 }
 
