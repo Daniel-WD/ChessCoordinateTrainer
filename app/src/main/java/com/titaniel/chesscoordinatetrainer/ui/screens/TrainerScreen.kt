@@ -1,13 +1,11 @@
 package com.titaniel.chesscoordinatetrainer.ui.screens
 
-import androidx.compose.animation.core.animateDpAsState
 import androidx.compose.foundation.layout.*
 import androidx.compose.material.Icon
 import androidx.compose.material.IconButton
 import androidx.compose.material.MaterialTheme
 import androidx.compose.material.Text
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.livedata.observeAsState
 import androidx.compose.ui.Alignment
@@ -26,6 +24,7 @@ import androidx.lifecycle.viewmodel.compose.viewModel
 import com.titaniel.chesscoordinatetrainer.R
 import com.titaniel.chesscoordinatetrainer.feedback.FeedbackManager
 import com.titaniel.chesscoordinatetrainer.firebase_logging.FirebaseLogging
+import com.titaniel.chesscoordinatetrainer.ui.BannerAd
 import com.titaniel.chesscoordinatetrainer.ui.board.ChessBoard
 import com.titaniel.chesscoordinatetrainer.ui.board.ChessColor
 import com.titaniel.chesscoordinatetrainer.ui.dialogs.FeedbackDialog
@@ -109,7 +108,8 @@ class TrainerViewModel @Inject constructor(
     }
 
     fun onRotationChange() {
-        val newFrontColor = if (_frontColor.value == ChessColor.BLACK) ChessColor.WHITE else ChessColor.BLACK
+        val newFrontColor =
+            if (_frontColor.value == ChessColor.BLACK) ChessColor.WHITE else ChessColor.BLACK
         _frontColor.value = newFrontColor
         firebaseLogging.logRotationChange(newFrontColor)
     }
@@ -243,19 +243,20 @@ fun TrainerScreen(
 
         }
 
-        IconButton(
-            modifier = Modifier
-                .padding(4.dp)
-                .align(Alignment.BottomEnd),
-            onClick = onShowFeedbackDialog
-        ) {
-            Icon(
-                painter = painterResource(id = R.drawable.ic_baseline_chat_bubble_24),
-                tint = MaterialTheme.colors.onBackground.copy(alpha = 0.20f),
-                contentDescription = null
-            )
-        }
+        Column(Modifier.align(Alignment.BottomCenter)) {
+            IconButton(
+                modifier = Modifier.align(Alignment.End).padding(4.dp),
+                onClick = onShowFeedbackDialog
+            ) {
+                Icon(
+                    painter = painterResource(id = R.drawable.ic_baseline_chat_bubble_24),
+                    tint = MaterialTheme.colors.onBackground.copy(alpha = 0.20f),
+                    contentDescription = null
+                )
+            }
 
+            BannerAd(modifier = Modifier, id = stringResource(id = R.string.test_banner_ad_id))
+        }
     }
 
 
