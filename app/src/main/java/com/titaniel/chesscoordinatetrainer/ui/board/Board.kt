@@ -1,8 +1,6 @@
 package com.titaniel.chesscoordinatetrainer.ui.board
 
 import androidx.compose.animation.*
-import androidx.compose.animation.core.animateFloatAsState
-import androidx.compose.animation.core.tween
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
@@ -14,13 +12,11 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.draw.rotate
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
-import androidx.compose.ui.zIndex
 import com.titaniel.chesscoordinatetrainer.R
 
 
@@ -89,13 +85,10 @@ fun ChessBoard(
 ) {
 
     val xAxis = ('a'..'h').map { it.toString() }
+        .let { if (boardColorFront == ChessColor.BLACK) it.reversed() else it }
 
     val yAxis = (8 downTo 1).map { it.toString() }
-
-    val rotation by animateFloatAsState(
-        targetValue = if (boardColorFront == ChessColor.BLACK) 180f else 0f,
-        animationSpec = tween(500)
-    )
+        .let { if (boardColorFront == ChessColor.BLACK) it.reversed() else it }
 
     Column(
         modifier = Modifier
@@ -110,14 +103,19 @@ fun ChessBoard(
             spacing = sideIndicatorSpacing
         )
 
-        FilesIndicator(show = showCoordinateRulers, content = xAxis.let { if (boardColorFront == ChessColor.BLACK) it.reversed() else it })
+        FilesIndicator(
+            show = showCoordinateRulers,
+            content = xAxis
+        )
 
         Row {
 
-            RanksIndicator(show = showCoordinateRulers, content = yAxis.let { if (boardColorFront == ChessColor.BLACK) it.reversed() else it })
+            RanksIndicator(
+                show = showCoordinateRulers,
+                content = yAxis
+            )
 
             Board(
-                rotation = rotation,
                 xAxis = xAxis,
                 yAxis = yAxis,
                 onTileClick = onTileClick,
@@ -227,7 +225,6 @@ fun RanksIndicator(show: Boolean, content: List<String>) {
 
 @Composable
 fun Board(
-    rotation: Float,
     xAxis: List<String>,
     yAxis: List<String>,
     onTileClick: (String) -> Unit,
@@ -235,7 +232,6 @@ fun Board(
 ) {
     Column(
         modifier = Modifier
-            .rotate(rotation)
             .background(MaterialTheme.colors.onBackground.copy(alpha = 0.15f))
             .padding(BORDER_THICKNESS)
     ) {
@@ -247,8 +243,7 @@ fun Board(
                         if ((j + i) % 2 == 0) ChessColor.WHITE else ChessColor.BLACK,
                         xChar + yChar,
                         onTileClick,
-                        showPieces,
-                        -rotation
+                        showPieces
                     )
                 }
             }
@@ -261,8 +256,7 @@ fun BoardTile(
     type: ChessColor,
     notation: String,
     onClick: (String) -> Unit,
-    showAvailablePiece: Boolean,
-    pieceRotation: Float
+    showAvailablePiece: Boolean
 ) {
     Box(
         modifier = Modifier
@@ -279,14 +273,16 @@ fun BoardTile(
                 onClick(notation)
             }
     ) {
-        if (showAvailablePiece) pieceIdByNotation[notation]?.let { pieceId ->
-            Image(
-                modifier = Modifier
-                    .rotate(pieceRotation)
-                    .padding(1.dp),
-                painter = painterResource(id = pieceId),
-                contentDescription = null
-            )
+        AnimatedVisibility(
+            visible = showAvailablePiece
+        ) {
+            pieceIdByNotation[notation]?.let { pieceId ->
+                Image(
+                    modifier = Modifier.padding(1.dp),
+                    painter = painterResource(id = pieceId),
+                    contentDescription = null
+                )
+            }
         }
     }
 }
