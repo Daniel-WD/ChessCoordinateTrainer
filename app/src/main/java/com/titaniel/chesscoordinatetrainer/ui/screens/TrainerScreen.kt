@@ -1,15 +1,16 @@
 package com.titaniel.chesscoordinatetrainer.ui.screens
 
+import android.content.Context
 import androidx.compose.foundation.layout.*
 import androidx.compose.material.Icon
 import androidx.compose.material.IconButton
 import androidx.compose.material.MaterialTheme
 import androidx.compose.material.Text
-import androidx.compose.runtime.Composable
-import androidx.compose.runtime.getValue
+import androidx.compose.runtime.*
 import androidx.compose.runtime.livedata.observeAsState
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
@@ -21,6 +22,10 @@ import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import androidx.lifecycle.viewmodel.compose.viewModel
+import com.google.android.gms.ads.AdRequest
+import com.google.android.gms.ads.LoadAdError
+import com.google.android.gms.ads.interstitial.InterstitialAd
+import com.google.android.gms.ads.interstitial.InterstitialAdLoadCallback
 import com.titaniel.chesscoordinatetrainer.R
 import com.titaniel.chesscoordinatetrainer.feedback.FeedbackManager
 import com.titaniel.chesscoordinatetrainer.firebase_logging.FirebaseLogging
@@ -31,7 +36,9 @@ import com.titaniel.chesscoordinatetrainer.ui.dialogs.FeedbackDialog
 import com.titaniel.chesscoordinatetrainer.ui.dialogs.ThankYouDialog
 import com.titaniel.chesscoordinatetrainer.ui.theme.ChessCoordinateTrainerTheme
 import dagger.hilt.android.lifecycle.HiltViewModel
+import kotlinx.coroutines.channels.awaitClose
 import kotlinx.coroutines.delay
+import kotlinx.coroutines.flow.*
 import kotlinx.coroutines.launch
 import javax.inject.Inject
 
@@ -66,6 +73,9 @@ class TrainerViewModel @Inject constructor(
     private val _thankYouDialogOpen = MutableLiveData(false)
     val thankYouDialogOpen: LiveData<Boolean> = _thankYouDialogOpen
 
+    private val _showInterstitial = MutableLiveData(false)
+    val showInterstitial: LiveData<Boolean> = _showInterstitial
+
     init {
         refreshSearchedTile()
     }
@@ -82,7 +92,11 @@ class TrainerViewModel @Inject constructor(
 
     fun onTileClicked(notation: String) {
         val correct = _searchedTile.value == notation
-        if (correct) refreshSearchedTile()
+        if (correct) {
+            refreshSearchedTile()
+        } else {
+            _showInterstitial.value = true
+        }
         firebaseLogging.logTileClicked(notation, correct)
     }
 
@@ -127,10 +141,36 @@ class TrainerViewModel @Inject constructor(
         }
     }
 
+    fun onShowInterstitial() {
+        _showInterstitial.value = false
+    }
+
+}
+
+fun loadInterstitialFlow(context: Context, adId: String) = callbackFlow {
+    val adRequest = AdRequest.Builder().build()
+    InterstitialAd.load(
+        context,
+        adId,
+        adRequest,
+        object : InterstitialAdLoadCallback() {
+            override fun onAdFailedToLoad(adError: LoadAdError) {
+                trySend(null)
+            }
+
+            override fun onAdLoaded(interstitialAd: InterstitialAd) {
+                trySend(interstitialAd)
+                close()
+            }
+        })
+    awaitClose {  }
 }
 
 @Composable
-fun TrainerWrapper(viewModel: TrainerViewModel = viewModel()) {
+fun TrainerWrapper(
+    viewModel: TrainerViewModel = viewModel(),
+    showInterstitialAd: (InterstitialAd) -> Unit
+) {
 
     val searchedTile by viewModel.searchedTile.observeAsState("")
     val frontColor by viewModel.frontColor.observeAsState(ChessColor.BLACK)
@@ -138,6 +178,7 @@ fun TrainerWrapper(viewModel: TrainerViewModel = viewModel()) {
     val thankYouDialogOpen by viewModel.thankYouDialogOpen.observeAsState(false)
     val showCoordinateRulers by viewModel.showCoordinateRulers.observeAsState(false)
     val showPieces by viewModel.showPieces.observeAsState(true)
+    val showInterstitial by viewModel.showInterstitial.observeAsState(false)
 
     TrainerScreen(
         searchedTile,
@@ -152,7 +193,10 @@ fun TrainerWrapper(viewModel: TrainerViewModel = viewModel()) {
         showCoordinateRulers,
         viewModel::onShowCoordinateRulersChange,
         showPieces,
-        viewModel::onShowPiecesChange
+        viewModel::onShowPiecesChange,
+        showInterstitial,
+        viewModel::onShowInterstitial,
+        showInterstitialAd
     )
 }
 
@@ -171,7 +215,9 @@ fun TrainerScreen(
     onShowCoordinateRulersChange: () -> Unit,
     showPieces: Boolean,
     onShowPiecesChange: () -> Unit,
-//    animate: Boolean
+    showInterstitial: Boolean,
+    onShowInterstitial: () -> Unit,
+    showInterstitialAd: (InterstitialAd) -> Unit
 ) {
 
     val iconTint = MaterialTheme.colors.onBackground.copy(alpha = 0.5f)
@@ -245,7 +291,9 @@ fun TrainerScreen(
 
         Column(Modifier.align(Alignment.BottomCenter)) {
             IconButton(
-                modifier = Modifier.align(Alignment.End).padding(4.dp),
+                modifier = Modifier
+                    .align(Alignment.End)
+                    .padding(4.dp),
                 onClick = onShowFeedbackDialog
             ) {
                 Icon(
@@ -255,7 +303,23 @@ fun TrainerScreen(
                 )
             }
 
-            BannerAd(modifier = Modifier, id = stringResource(id = R.string.test_banner_ad_id))
+            BannerAd(modifier = Modifier, id = stringResource(id = R.string.banner_test_ad_id))
+        }
+
+        val context = LocalContext.current
+        var ad by remember { mutableStateOf<InterstitialAd?>(null) }
+        if (showInterstitial) {
+            LaunchedEffect(key1 = true) {
+                ad?.let(showInterstitialAd)
+                ad = null
+                onShowInterstitial()
+            }
+        } else {
+            LaunchedEffect(key1 = true) {
+                ad ?: run {
+                    ad = loadInterstitialFlow(context, context.getString(R.string.interstitial_test_ad_id)).first() // TODO dont create flow everytime, just get latest element
+                }
+            }
         }
     }
 
@@ -287,7 +351,10 @@ fun TrainerPreview() {
             showCoordinateRulers = true,
             onShowCoordinateRulersChange = {},
             showPieces = false,
-            onShowPiecesChange = {}
+            onShowPiecesChange = {},
+            showInterstitial = false,
+            onShowInterstitial = {},
+            showInterstitialAd = {}
         )
     }
 }

@@ -7,13 +7,18 @@ import androidx.compose.material.MaterialTheme
 import androidx.compose.material.Surface
 import androidx.compose.runtime.Composable
 import com.google.accompanist.systemuicontroller.rememberSystemUiController
-import com.google.android.gms.ads.MobileAds
+import com.google.android.gms.ads.*
+import com.google.android.gms.ads.interstitial.InterstitialAd
+import com.google.android.gms.ads.interstitial.InterstitialAdLoadCallback
 import com.titaniel.chesscoordinatetrainer.ui.screens.TrainerWrapper
 import com.titaniel.chesscoordinatetrainer.ui.theme.ChessCoordinateTrainerTheme
 import dagger.hilt.android.AndroidEntryPoint
 
 @AndroidEntryPoint
 class MainActivity : ComponentActivity() {
+
+    var interAd: InterstitialAd? = null
+
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         MobileAds.initialize(this)
@@ -24,13 +29,16 @@ class MainActivity : ComponentActivity() {
 
                     SetSystemUi()
 
-                    TrainerWrapper()
+                    TrainerWrapper(showInterstitialAd = ::showInterstitial)
 //                    ThankYou()
 
                 }
             }
         }
     }
+
+    fun showInterstitial(ad: InterstitialAd) = ad.show(this)
+
 }
 
 @Composable
