@@ -54,6 +54,9 @@ android {
 }
 
 dependencies {
+    implementation "com.android.billingclient:billing:$billing_version"
+    implementation "com.android.billingclient:billing-ktx:$billing_version"
+
     implementation 'com.google.android.gms:play-services-ads:21.3.0'
 
     // System UI color change utils
