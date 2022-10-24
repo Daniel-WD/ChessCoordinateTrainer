@@ -273,9 +273,7 @@ fun BoardTile(
                 onClick(notation)
             }
     ) {
-        AnimatedVisibility(
-            visible = showAvailablePiece
-        ) {
+        if (showAvailablePiece) {
             pieceIdByNotation[notation]?.let { pieceId ->
                 Image(
                     modifier = Modifier.padding(1.dp),
