@@ -31,10 +31,22 @@ fun BannerAd(modifier: Modifier, id: String, adSize: AdSize = AdSize.FULL_BANNER
 }
 
 @Composable
+fun InterstitialAd(
+    interstitialAd: InterstitialAd,
+    presentInterstitial: (InterstitialAd) -> Unit,
+    onShow: () -> Unit
+) {
+    LaunchedEffect(key1 = true) {
+        interstitialAd.let(presentInterstitial)
+        onShow()
+    }
+}
+
+@Composable
 fun InterstitialAd(id: String, show: Boolean, present: (InterstitialAd) -> Unit, onShow: () -> Unit) {
     val context = LocalContext.current
     var ad by remember { mutableStateOf<InterstitialAd?>(null) }
-    val adsFlow = remember { loadInterstitialFlow(context, id) }
+    val adsFlow = remember { interstitialFlow(context, id) }
     if (show) {
         LaunchedEffect(key1 = true) {
             ad?.let(present)
@@ -48,7 +60,7 @@ fun InterstitialAd(id: String, show: Boolean, present: (InterstitialAd) -> Unit,
     }
 }
 
-fun loadInterstitialFlow(context: Context, adId: String) = callbackFlow {
+fun interstitialFlow(context: Context, adId: String) = callbackFlow {
     val adRequest = AdRequest.Builder().build()
     InterstitialAd.load(
         context,

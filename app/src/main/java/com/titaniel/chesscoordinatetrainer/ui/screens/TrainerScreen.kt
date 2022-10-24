@@ -1,11 +1,13 @@
 package com.titaniel.chesscoordinatetrainer.ui.screens
 
+import android.app.Application
 import androidx.compose.foundation.layout.*
 import androidx.compose.material.Icon
 import androidx.compose.material.IconButton
 import androidx.compose.material.MaterialTheme
 import androidx.compose.material.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.livedata.observeAsState
 import androidx.compose.ui.Alignment
@@ -16,9 +18,9 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import androidx.lifecycle.AndroidViewModel
 import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
-import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import androidx.lifecycle.viewmodel.compose.viewModel
 import com.google.android.gms.ads.interstitial.InterstitialAd
@@ -31,9 +33,11 @@ import com.titaniel.chesscoordinatetrainer.ui.board.ChessBoard
 import com.titaniel.chesscoordinatetrainer.ui.board.ChessColor
 import com.titaniel.chesscoordinatetrainer.ui.dialogs.FeedbackDialog
 import com.titaniel.chesscoordinatetrainer.ui.dialogs.ThankYouDialog
+import com.titaniel.chesscoordinatetrainer.ui.interstitialFlow
 import com.titaniel.chesscoordinatetrainer.ui.theme.ChessCoordinateTrainerTheme
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.delay
+import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.launch
 import javax.inject.Inject
 
@@ -42,9 +46,10 @@ import javax.inject.Inject
  */
 @HiltViewModel
 class TrainerViewModel @Inject constructor(
-    val feedbackManager: FeedbackManager,
-    val firebaseLogging: FirebaseLogging
-) : ViewModel() {
+    private val feedbackManager: FeedbackManager,
+    private val firebaseLogging: FirebaseLogging,
+    app: Application
+) : AndroidViewModel(app) {
 
     companion object {
         private const val THANK_YOU_DIALOG_SHOW_DURATION = 1000L
@@ -71,8 +76,15 @@ class TrainerViewModel @Inject constructor(
     private val _showInterstitial = MutableLiveData(false)
     val showInterstitial: LiveData<Boolean> = _showInterstitial
 
+    private val _nextInterstitial = MutableLiveData<InterstitialAd?>(null)
+    val nextInterstitial: LiveData<InterstitialAd?> = _nextInterstitial
+
+    private val interstitialFlow =
+        interstitialFlow(app, app.getString(R.string.interstitial_test_ad_id))
+
     init {
         refreshSearchedTile()
+        viewModelScope.launch { _nextInterstitial.value = interstitialFlow.first() }
     }
 
     private fun refreshSearchedTile() {
@@ -138,6 +150,7 @@ class TrainerViewModel @Inject constructor(
 
     fun onShowInterstitial() {
         _showInterstitial.value = false
+        viewModelScope.launch { _nextInterstitial.value = interstitialFlow.first() }
     }
 
 }
@@ -155,6 +168,7 @@ fun TrainerWrapper(
     val showCoordinateRulers by viewModel.showCoordinateRulers.observeAsState(false)
     val showPieces by viewModel.showPieces.observeAsState(true)
     val showInterstitial by viewModel.showInterstitial.observeAsState(false)
+    val nextInterstitial by viewModel.nextInterstitial.observeAsState()
 
     TrainerScreen(
         searchedTile,
@@ -169,11 +183,18 @@ fun TrainerWrapper(
         showCoordinateRulers,
         viewModel::onShowCoordinateRulersChange,
         showPieces,
-        viewModel::onShowPiecesChange,
-        showInterstitial,
-        viewModel::onShowInterstitial,
-        presentInterstitial
+        viewModel::onShowPiecesChange
     )
+
+    if (showInterstitial) {
+        nextInterstitial?.let {
+            InterstitialAd(
+                interstitialAd = it,
+                presentInterstitial = presentInterstitial,
+                onShow = viewModel::onShowInterstitial
+            )
+        }
+    }
 }
 
 @Composable
@@ -190,10 +211,7 @@ fun TrainerScreen(
     showCoordinateRulers: Boolean,
     onShowCoordinateRulersChange: () -> Unit,
     showPieces: Boolean,
-    onShowPiecesChange: () -> Unit,
-    showInterstitial: Boolean,
-    onShowInterstitial: () -> Unit,
-    presentInterstitial: (InterstitialAd) -> Unit
+    onShowPiecesChange: () -> Unit
 ) {
 
     val iconTint = MaterialTheme.colors.onBackground.copy(alpha = 0.5f)
@@ -284,13 +302,6 @@ fun TrainerScreen(
 
     }
 
-    InterstitialAd(
-        id = stringResource(id = R.string.interstitial_test_ad_id),
-        show = showInterstitial,
-        present = presentInterstitial,
-        onShowInterstitial
-    )
-
     if (feedbackDialogOpen) {
         FeedbackDialog(onConfirm = onConfirmFeedback, onDismiss = onDismissFeedbackDialog)
     }
@@ -318,10 +329,7 @@ fun TrainerPreview() {
             showCoordinateRulers = true,
             onShowCoordinateRulersChange = {},
             showPieces = false,
-            onShowPiecesChange = {},
-            showInterstitial = false,
-            onShowInterstitial = {},
-            presentInterstitial = {}
+            onShowPiecesChange = {}
         )
     }
 }
