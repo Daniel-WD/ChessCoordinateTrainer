@@ -292,7 +292,7 @@ fun TrainerScreen(
 
         }
 
-        Column(Modifier.align(Alignment.BottomCenter)) {
+        Column(Modifier.fillMaxWidth().align(Alignment.BottomCenter)) {
             IconButton(
                 modifier = Modifier
                     .align(Alignment.End)
