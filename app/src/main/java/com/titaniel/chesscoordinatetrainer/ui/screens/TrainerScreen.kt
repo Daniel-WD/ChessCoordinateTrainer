@@ -2,10 +2,7 @@ package com.titaniel.chesscoordinatetrainer.ui.screens
 
 import android.app.Application
 import androidx.compose.foundation.layout.*
-import androidx.compose.material.Icon
-import androidx.compose.material.IconButton
-import androidx.compose.material.MaterialTheme
-import androidx.compose.material.Text
+import androidx.compose.material.*
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.livedata.observeAsState
@@ -22,10 +19,13 @@ import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.viewModelScope
 import androidx.lifecycle.viewmodel.compose.viewModel
+import com.android.billingclient.api.BillingResult
+import com.android.billingclient.api.ProductDetails
 import com.google.android.gms.ads.interstitial.InterstitialAd
 import com.titaniel.chesscoordinatetrainer.R
 import com.titaniel.chesscoordinatetrainer.feedback.FeedbackManager
 import com.titaniel.chesscoordinatetrainer.firebase_logging.FirebaseLogging
+import com.titaniel.chesscoordinatetrainer.no_ads.NoAdsInteractor
 import com.titaniel.chesscoordinatetrainer.ui.InterstitialAd
 import com.titaniel.chesscoordinatetrainer.ui.board.ChessBoard
 import com.titaniel.chesscoordinatetrainer.ui.board.ChessColor
@@ -35,9 +35,8 @@ import com.titaniel.chesscoordinatetrainer.ui.interstitialFlow
 import com.titaniel.chesscoordinatetrainer.ui.theme.ChessCoordinateTrainerTheme
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.delay
-import kotlinx.coroutines.flow.MutableStateFlow
+import kotlinx.coroutines.flow.collectLatest
 import kotlinx.coroutines.flow.first
-import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.launch
 import javax.inject.Inject
 
@@ -48,6 +47,7 @@ import javax.inject.Inject
 class TrainerViewModel @Inject constructor(
     private val feedbackManager: FeedbackManager,
     private val firebaseLogging: FirebaseLogging,
+    private val noAdsInteractor: NoAdsInteractor,
     app: Application
 ) : AndroidViewModel(app) {
 
@@ -86,9 +86,15 @@ class TrainerViewModel @Inject constructor(
 
     private var wrongTileCount = 0
 
+    private val _noAdsProductDetails = MutableLiveData<ProductDetails?>(null)
+    val noAdsProductDetails: LiveData<ProductDetails?> = _noAdsProductDetails
+
     init {
         refreshSearchedTile()
-        viewModelScope.launch { _nextInterstitial.value = interstitialFlow.first() }
+        viewModelScope.launch {
+            _nextInterstitial.value = interstitialFlow.first()
+            noAdsInteractor.noAdsProductDetails.collectLatest { _noAdsProductDetails.value = it }
+        }
     }
 
     private fun refreshSearchedTile() {
@@ -107,7 +113,7 @@ class TrainerViewModel @Inject constructor(
             refreshSearchedTile()
         } else {
             wrongTileCount += 1
-            if(wrongTileCount > FAILURE_AD_THRESHOLD) {
+            if (wrongTileCount > FAILURE_AD_THRESHOLD) {
                 _showInterstitial.value = true
                 wrongTileCount = 0
             }
@@ -118,8 +124,8 @@ class TrainerViewModel @Inject constructor(
     fun onSendFeedback(feedback: String) {
         feedbackManager.send(feedback)
         _feedbackDialogOpen.value = false
-        _thankYouDialogOpen.value = true
         viewModelScope.launch {
+            _thankYouDialogOpen.value = true
             delay(THANK_YOU_DIALOG_SHOW_DURATION)
             _thankYouDialogOpen.value = false
         }
@@ -166,7 +172,8 @@ class TrainerViewModel @Inject constructor(
 @Composable
 fun TrainerWrapper(
     viewModel: TrainerViewModel = viewModel(),
-    presentInterstitial: (InterstitialAd) -> Unit
+    presentInterstitial: (InterstitialAd) -> Unit,
+    startPurchaseFlow: (ProductDetails) -> BillingResult?
 ) {
 
     val searchedTile by viewModel.searchedTile.observeAsState("")
@@ -175,6 +182,7 @@ fun TrainerWrapper(
     val thankYouDialogOpen by viewModel.thankYouDialogOpen.observeAsState(false)
     val showCoordinateRulers by viewModel.showCoordinateRulers.observeAsState(false)
     val showPieces by viewModel.showPieces.observeAsState(true)
+    val noAdsProductDetails by viewModel.noAdsProductDetails.observeAsState()
 
     TrainerScreen(
         searchedTile,
@@ -189,7 +197,9 @@ fun TrainerWrapper(
         showCoordinateRulers,
         viewModel::onShowCoordinateRulersChange,
         showPieces,
-        viewModel::onShowPiecesChange
+        viewModel::onShowPiecesChange,
+        noAdsProductDetails,
+        startPurchaseFlow
     )
 
     val showInterstitial by viewModel.showInterstitial.observeAsState(false)
@@ -220,7 +230,9 @@ fun TrainerScreen(
     showCoordinateRulers: Boolean,
     onShowCoordinateRulersChange: () -> Unit,
     showPieces: Boolean,
-    onShowPiecesChange: () -> Unit
+    onShowPiecesChange: () -> Unit,
+    noAdsProductDetails: ProductDetails?,
+    startPurchaseFlow: (ProductDetails) -> BillingResult?
 ) {
 
     val iconTint = MaterialTheme.colors.onBackground.copy(alpha = 0.5f)
@@ -292,7 +304,11 @@ fun TrainerScreen(
 
         }
 
-        Column(Modifier.fillMaxWidth().align(Alignment.BottomCenter)) {
+        Column(
+            Modifier
+                .fillMaxWidth()
+                .align(Alignment.BottomCenter)
+        ) {
             IconButton(
                 modifier = Modifier
                     .align(Alignment.End)
@@ -304,6 +320,15 @@ fun TrainerScreen(
                     tint = MaterialTheme.colors.onBackground.copy(alpha = 0.20f),
                     contentDescription = null
                 )
+            }
+
+            noAdsProductDetails?.let {
+                TextButton(onClick = {
+                    val hi = startPurchaseFlow(it)
+                    print(hi)
+                }) {
+                    Text(text = "No Ads ${it.oneTimePurchaseOfferDetails?.formattedPrice}")
+                }
             }
 
 //            BannerAd(modifier = Modifier, id = stringResource(id = R.string.banner_ad_id))
@@ -338,7 +363,9 @@ fun TrainerPreview() {
             showCoordinateRulers = true,
             onShowCoordinateRulersChange = {},
             showPieces = false,
-            onShowPiecesChange = {}
+            onShowPiecesChange = {},
+            noAdsProductDetails = null,
+            startPurchaseFlow = { null }
         )
     }
 }
