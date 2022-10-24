@@ -1,16 +1,15 @@
 package com.titaniel.chesscoordinatetrainer.ui.screens
 
-import android.content.Context
 import androidx.compose.foundation.layout.*
 import androidx.compose.material.Icon
 import androidx.compose.material.IconButton
 import androidx.compose.material.MaterialTheme
 import androidx.compose.material.Text
-import androidx.compose.runtime.*
+import androidx.compose.runtime.Composable
+import androidx.compose.runtime.getValue
 import androidx.compose.runtime.livedata.observeAsState
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
@@ -22,23 +21,19 @@ import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import androidx.lifecycle.viewmodel.compose.viewModel
-import com.google.android.gms.ads.AdRequest
-import com.google.android.gms.ads.LoadAdError
 import com.google.android.gms.ads.interstitial.InterstitialAd
-import com.google.android.gms.ads.interstitial.InterstitialAdLoadCallback
 import com.titaniel.chesscoordinatetrainer.R
 import com.titaniel.chesscoordinatetrainer.feedback.FeedbackManager
 import com.titaniel.chesscoordinatetrainer.firebase_logging.FirebaseLogging
 import com.titaniel.chesscoordinatetrainer.ui.BannerAd
+import com.titaniel.chesscoordinatetrainer.ui.InterstitialAd
 import com.titaniel.chesscoordinatetrainer.ui.board.ChessBoard
 import com.titaniel.chesscoordinatetrainer.ui.board.ChessColor
 import com.titaniel.chesscoordinatetrainer.ui.dialogs.FeedbackDialog
 import com.titaniel.chesscoordinatetrainer.ui.dialogs.ThankYouDialog
 import com.titaniel.chesscoordinatetrainer.ui.theme.ChessCoordinateTrainerTheme
 import dagger.hilt.android.lifecycle.HiltViewModel
-import kotlinx.coroutines.channels.awaitClose
 import kotlinx.coroutines.delay
-import kotlinx.coroutines.flow.*
 import kotlinx.coroutines.launch
 import javax.inject.Inject
 
@@ -147,29 +142,10 @@ class TrainerViewModel @Inject constructor(
 
 }
 
-fun loadInterstitialFlow(context: Context, adId: String) = callbackFlow {
-    val adRequest = AdRequest.Builder().build()
-    InterstitialAd.load(
-        context,
-        adId,
-        adRequest,
-        object : InterstitialAdLoadCallback() {
-            override fun onAdFailedToLoad(adError: LoadAdError) {
-                trySend(null)
-            }
-
-            override fun onAdLoaded(interstitialAd: InterstitialAd) {
-                trySend(interstitialAd)
-                close()
-            }
-        })
-    awaitClose {  }
-}
-
 @Composable
 fun TrainerWrapper(
     viewModel: TrainerViewModel = viewModel(),
-    showInterstitialAd: (InterstitialAd) -> Unit
+    presentInterstitial: (InterstitialAd) -> Unit
 ) {
 
     val searchedTile by viewModel.searchedTile.observeAsState("")
@@ -196,7 +172,7 @@ fun TrainerWrapper(
         viewModel::onShowPiecesChange,
         showInterstitial,
         viewModel::onShowInterstitial,
-        showInterstitialAd
+        presentInterstitial
     )
 }
 
@@ -217,7 +193,7 @@ fun TrainerScreen(
     onShowPiecesChange: () -> Unit,
     showInterstitial: Boolean,
     onShowInterstitial: () -> Unit,
-    showInterstitialAd: (InterstitialAd) -> Unit
+    presentInterstitial: (InterstitialAd) -> Unit
 ) {
 
     val iconTint = MaterialTheme.colors.onBackground.copy(alpha = 0.5f)
@@ -306,23 +282,14 @@ fun TrainerScreen(
             BannerAd(modifier = Modifier, id = stringResource(id = R.string.banner_test_ad_id))
         }
 
-        val context = LocalContext.current
-        var ad by remember { mutableStateOf<InterstitialAd?>(null) }
-        if (showInterstitial) {
-            LaunchedEffect(key1 = true) {
-                ad?.let(showInterstitialAd)
-                ad = null
-                onShowInterstitial()
-            }
-        } else {
-            LaunchedEffect(key1 = true) {
-                ad ?: run {
-                    ad = loadInterstitialFlow(context, context.getString(R.string.interstitial_test_ad_id)).first() // TODO dont create flow everytime, just get latest element
-                }
-            }
-        }
     }
 
+    InterstitialAd(
+        id = stringResource(id = R.string.interstitial_test_ad_id),
+        show = showInterstitial,
+        present = presentInterstitial,
+        onShowInterstitial
+    )
 
     if (feedbackDialogOpen) {
         FeedbackDialog(onConfirm = onConfirmFeedback, onDismiss = onDismissFeedbackDialog)
@@ -354,7 +321,7 @@ fun TrainerPreview() {
             onShowPiecesChange = {},
             showInterstitial = false,
             onShowInterstitial = {},
-            showInterstitialAd = {}
+            presentInterstitial = {}
         )
     }
 }

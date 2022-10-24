@@ -9,7 +9,6 @@ import androidx.compose.runtime.Composable
 import com.google.accompanist.systemuicontroller.rememberSystemUiController
 import com.google.android.gms.ads.*
 import com.google.android.gms.ads.interstitial.InterstitialAd
-import com.google.android.gms.ads.interstitial.InterstitialAdLoadCallback
 import com.titaniel.chesscoordinatetrainer.ui.screens.TrainerWrapper
 import com.titaniel.chesscoordinatetrainer.ui.theme.ChessCoordinateTrainerTheme
 import dagger.hilt.android.AndroidEntryPoint
@@ -17,27 +16,20 @@ import dagger.hilt.android.AndroidEntryPoint
 @AndroidEntryPoint
 class MainActivity : ComponentActivity() {
 
-    var interAd: InterstitialAd? = null
-
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         MobileAds.initialize(this)
         setContent {
             ChessCoordinateTrainerTheme {
-                // A surface container using the 'background' color from the theme
                 Surface(color = MaterialTheme.colors.background) {
-
                     SetSystemUi()
-
-                    TrainerWrapper(showInterstitialAd = ::showInterstitial)
-//                    ThankYou()
-
+                    TrainerWrapper(presentInterstitial = ::presentInterstitial)
                 }
             }
         }
     }
 
-    fun showInterstitial(ad: InterstitialAd) = ad.show(this)
+    private fun presentInterstitial(ad: InterstitialAd) = ad.show(this)
 
 }
 
