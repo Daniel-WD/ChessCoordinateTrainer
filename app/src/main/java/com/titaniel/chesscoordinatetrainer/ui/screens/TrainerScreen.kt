@@ -7,7 +7,6 @@ import androidx.compose.material.IconButton
 import androidx.compose.material.MaterialTheme
 import androidx.compose.material.Text
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.livedata.observeAsState
 import androidx.compose.ui.Alignment
@@ -27,7 +26,6 @@ import com.google.android.gms.ads.interstitial.InterstitialAd
 import com.titaniel.chesscoordinatetrainer.R
 import com.titaniel.chesscoordinatetrainer.feedback.FeedbackManager
 import com.titaniel.chesscoordinatetrainer.firebase_logging.FirebaseLogging
-import com.titaniel.chesscoordinatetrainer.ui.BannerAd
 import com.titaniel.chesscoordinatetrainer.ui.InterstitialAd
 import com.titaniel.chesscoordinatetrainer.ui.board.ChessBoard
 import com.titaniel.chesscoordinatetrainer.ui.board.ChessColor
@@ -37,7 +35,9 @@ import com.titaniel.chesscoordinatetrainer.ui.interstitialFlow
 import com.titaniel.chesscoordinatetrainer.ui.theme.ChessCoordinateTrainerTheme
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.delay
+import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.first
+import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.launch
 import javax.inject.Inject
 
@@ -80,7 +80,11 @@ class TrainerViewModel @Inject constructor(
     val nextInterstitial: LiveData<InterstitialAd?> = _nextInterstitial
 
     private val interstitialFlow =
-        interstitialFlow(app, app.getString(R.string.interstitial_test_ad_id))
+        interstitialFlow(app, app.getString(R.string.interstitial_ad_id))
+
+    private val FAILURE_AD_THRESHOLD = 10
+
+    private var wrongTileCount = 0
 
     init {
         refreshSearchedTile()
@@ -102,7 +106,11 @@ class TrainerViewModel @Inject constructor(
         if (correct) {
             refreshSearchedTile()
         } else {
-            _showInterstitial.value = true
+            wrongTileCount += 1
+            if(wrongTileCount > FAILURE_AD_THRESHOLD) {
+                _showInterstitial.value = true
+                wrongTileCount = 0
+            }
         }
         firebaseLogging.logTileClicked(notation, correct)
     }
@@ -167,8 +175,6 @@ fun TrainerWrapper(
     val thankYouDialogOpen by viewModel.thankYouDialogOpen.observeAsState(false)
     val showCoordinateRulers by viewModel.showCoordinateRulers.observeAsState(false)
     val showPieces by viewModel.showPieces.observeAsState(true)
-    val showInterstitial by viewModel.showInterstitial.observeAsState(false)
-    val nextInterstitial by viewModel.nextInterstitial.observeAsState()
 
     TrainerScreen(
         searchedTile,
@@ -185,6 +191,9 @@ fun TrainerWrapper(
         showPieces,
         viewModel::onShowPiecesChange
     )
+
+    val showInterstitial by viewModel.showInterstitial.observeAsState(false)
+    val nextInterstitial by viewModel.nextInterstitial.observeAsState()
 
     if (showInterstitial) {
         nextInterstitial?.let {
@@ -297,7 +306,7 @@ fun TrainerScreen(
                 )
             }
 
-            BannerAd(modifier = Modifier, id = stringResource(id = R.string.banner_test_ad_id))
+//            BannerAd(modifier = Modifier, id = stringResource(id = R.string.banner_ad_id))
         }
 
     }
