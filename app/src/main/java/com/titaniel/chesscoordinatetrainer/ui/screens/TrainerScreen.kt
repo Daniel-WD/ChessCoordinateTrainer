@@ -116,7 +116,7 @@ class TrainerViewModel @Inject constructor(
             refreshSearchedTile()
         } else {
             wrongTileCount += 1
-            if (wrongTileCount > FAILURE_AD_THRESHOLD && noAdsPurchased.value == false) {
+            if (wrongTileCount > FAILURE_AD_THRESHOLD && noAdsPurchased.value != true) {
                 _showInterstitial.value = true
                 wrongTileCount = 0
                 firebaseLogging.logTriggerInterstitial()
