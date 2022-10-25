@@ -52,11 +52,9 @@ class MainActivity : ComponentActivity() {
                 BillingFlowParams.ProductDetailsParams.newBuilder()
                     .setProductDetails(productDetails).build()
             )
-
             val billingFlowParams =
                 BillingFlowParams.newBuilder().setProductDetailsParamsList(productDetailsParamsList)
                     .build()
-
             it.launchBillingFlow(this, billingFlowParams)
         }
     }

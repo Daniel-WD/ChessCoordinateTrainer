@@ -2,7 +2,10 @@ package com.titaniel.chesscoordinatetrainer.ui.screens
 
 import android.app.Application
 import androidx.compose.foundation.layout.*
-import androidx.compose.material.*
+import androidx.compose.material.Icon
+import androidx.compose.material.IconButton
+import androidx.compose.material.MaterialTheme
+import androidx.compose.material.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.livedata.observeAsState
@@ -32,7 +35,7 @@ import com.titaniel.chesscoordinatetrainer.ui.interstitialFlow
 import com.titaniel.chesscoordinatetrainer.ui.theme.ChessCoordinateTrainerTheme
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.delay
-import kotlinx.coroutines.flow.collectLatest
+import kotlinx.coroutines.flow.emptyFlow
 import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.launch
 import javax.inject.Inject
@@ -50,6 +53,7 @@ class TrainerViewModel @Inject constructor(
 
     companion object {
         private const val THANK_YOU_DIALOG_SHOW_DURATION = 1000L
+        private const val FAILURE_AD_THRESHOLD = 10
     }
 
     private val _searchedTile = MutableLiveData<String>()
@@ -79,11 +83,12 @@ class TrainerViewModel @Inject constructor(
     private val interstitialFlow =
         interstitialFlow(app, app.getString(R.string.interstitial_ad_id))
 
-    private val FAILURE_AD_THRESHOLD = 10
-
     private var wrongTileCount = 0
 
-    val noAdsProductDetails: LiveData<ProductDetails?> = noAdsInteractor.noAdsProductDetails.asLiveData()
+    val noAdsPurchased = noAdsInteractor.isPurchased.asLiveData()
+
+    val purchasableAdProduct =
+        noAdsPurchased.switchMap { purchased -> if (purchased.not()) noAdsInteractor.productDetails.asLiveData() else emptyFlow<ProductDetails>().asLiveData() }
 
     init {
         refreshSearchedTile()
@@ -180,7 +185,8 @@ fun TrainerWrapper(
     val thankYouDialogOpen by viewModel.thankYouDialogOpen.observeAsState(false)
     val showCoordinateRulers by viewModel.showCoordinateRulers.observeAsState(false)
     val showPieces by viewModel.showPieces.observeAsState(true)
-    val noAdsProductDetails by viewModel.noAdsProductDetails.observeAsState()
+    val noAdsPurchased by viewModel.noAdsPurchased.observeAsState(false)
+    val purchasableAdProduct by viewModel.purchasableAdProduct.observeAsState()
 
     TrainerScreen(
         searchedTile,
@@ -196,7 +202,8 @@ fun TrainerWrapper(
         viewModel::onShowCoordinateRulersChange,
         showPieces,
         viewModel::onShowPiecesChange,
-        noAdsProductDetails,
+        noAdsPurchased,
+        purchasableAdProduct,
         startPurchaseFlow
     )
 
@@ -229,7 +236,8 @@ fun TrainerScreen(
     onShowCoordinateRulersChange: () -> Unit,
     showPieces: Boolean,
     onShowPiecesChange: () -> Unit,
-    noAdsProductDetails: ProductDetails?,
+    noAdsPurchased: Boolean,
+    purchasableAdProduct: ProductDetails?,
     startPurchaseFlow: (ProductDetails) -> BillingResult?
 ) {
 
@@ -320,22 +328,18 @@ fun TrainerScreen(
                 )
             }
 
-            noAdsProductDetails?.let {
-                TextButton(onClick = {
-                    val hi = startPurchaseFlow(it)
-                    print(hi)
-                }) {
-                    Text(text = "No Ads ${it.oneTimePurchaseOfferDetails?.formattedPrice}")
-                }
-            }
-
 //            BannerAd(modifier = Modifier, id = stringResource(id = R.string.banner_ad_id))
         }
 
     }
 
     if (feedbackDialogOpen) {
-        FeedbackDialog(onConfirm = onConfirmFeedback, onDismiss = onDismissFeedbackDialog)
+        FeedbackDialog(onConfirm = onConfirmFeedback,
+            onDismiss = onDismissFeedbackDialog,
+            noAdsPurchased = noAdsPurchased,
+            purchasableAdProduct = purchasableAdProduct,
+            purchaseNoAds = { startPurchaseFlow(it) }
+        )
     }
 
     if (thankYouDialogOpen) {
@@ -362,8 +366,9 @@ fun TrainerPreview() {
             onShowCoordinateRulersChange = {},
             showPieces = false,
             onShowPiecesChange = {},
-            noAdsProductDetails = null,
-            startPurchaseFlow = { null }
+            purchasableAdProduct = null,
+            startPurchaseFlow = { null },
+            noAdsPurchased = true
         )
     }
 }

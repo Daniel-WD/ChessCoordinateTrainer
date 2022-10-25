@@ -6,7 +6,6 @@ import androidx.compose.material.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.SolidColor
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
@@ -16,22 +15,47 @@ import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import com.android.billingclient.api.ProductDetails
 import com.titaniel.chesscoordinatetrainer.R
 
 @Composable
-fun FeedbackDialog(onConfirm: (String) -> Unit, onDismiss: () -> Unit) {
-
+fun FeedbackDialog(
+    onConfirm: (String) -> Unit,
+    onDismiss: () -> Unit,
+    noAdsPurchased: Boolean,
+    purchasableAdProduct: ProductDetails?,
+    purchaseNoAds: (ProductDetails) -> Unit
+) {
     var feedbackText by remember { mutableStateOf("") }
 
     AlertDialog(
         confirmButton = {
-            TextButton(
-                onClick = { onConfirm(feedbackText) }
-            ) {
-                Text(text = stringResource(R.string.feedback_confirm).uppercase())
+            Row {
+                TextButton(
+                    onClick = { onConfirm(feedbackText) }
+                ) {
+                    Text(text = stringResource(R.string.feedback_confirm).uppercase())
+                }
             }
         },
         dismissButton = {
+            if (noAdsPurchased) {
+                TextButton(
+                    onClick = { },
+                    enabled = false
+                ) {
+                    Text(text = stringResource(R.string.feedback_no_ads).uppercase())
+                    Icon(modifier = Modifier.padding(start = 4.dp).size(20.dp), painter = painterResource(id = R.drawable.ic_baseline_check_24), contentDescription = null)
+                }
+            } else {
+                purchasableAdProduct?.oneTimePurchaseOfferDetails?.formattedPrice?.let { price ->
+                    TextButton(
+                        onClick = { purchaseNoAds(purchasableAdProduct) }
+                    ) {
+                        Text(text = stringResource(R.string.feedback_no_ads_with_price, price).uppercase())
+                    }
+                }
+            }
             TextButton(
                 onClick = onDismiss
             ) {
@@ -39,7 +63,6 @@ fun FeedbackDialog(onConfirm: (String) -> Unit, onDismiss: () -> Unit) {
             }
         },
         text = {
-
             Column(modifier = Modifier.wrapContentHeight()) {
                 Column(
                     modifier = Modifier.fillMaxWidth(),
@@ -68,7 +91,10 @@ fun FeedbackDialog(onConfirm: (String) -> Unit, onDismiss: () -> Unit) {
                     onValueChange = { feedbackText = it },
                     decorationBox = {
                         if (feedbackText.isEmpty()) {
-                            Text(text = stringResource(R.string.feedback_hint), color = MaterialTheme.colors.onSurface)
+                            Text(
+                                text = stringResource(R.string.feedback_hint),
+                                color = MaterialTheme.colors.onSurface
+                            )
                         }
 
                         it()

@@ -4,8 +4,8 @@ import com.android.billingclient.api.*
 import com.titaniel.chesscoordinatetrainer.billing.BillingProvider
 import com.titaniel.chesscoordinatetrainer.billing.acknowledgeIfNotAlready
 import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.flow.channelFlow
-import kotlinx.coroutines.flow.collectLatest
+import kotlinx.coroutines.GlobalScope
+import kotlinx.coroutines.flow.*
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 import javax.inject.Inject
@@ -18,7 +18,7 @@ class NoAdsInteractor @Inject constructor(private val billingProvider: BillingPr
         const val NO_ADS_PRODUCT_ID = "no_ads" // in strings
     }
 
-    val noAdsProductDetails = channelFlow {
+    val productDetails = channelFlow {
         billingProvider.billingClient.collectLatest {
             it?.let { client ->
                 val params = QueryProductDetailsParams.newBuilder()
@@ -30,15 +30,11 @@ class NoAdsInteractor @Inject constructor(private val billingProvider: BillingPr
                             .build()
                     )
                 )
-
-                val productDetailsResult = withContext(Dispatchers.IO) {
-                    client.queryProductDetails(params.build())
-                }
-
+                val productDetailsResult = withContext(Dispatchers.IO) { client.queryProductDetails(params.build()) }
                 send(productDetailsResult.productDetailsList?.get(0))
             } ?: send(null)
         }
-    }
+    }.shareIn(GlobalScope, SharingStarted.Eagerly, 1)
 
     val isPurchased = channelFlow {
         suspend fun BillingClient.handlePurchasedItems(
@@ -49,7 +45,7 @@ class NoAdsInteractor @Inject constructor(private val billingProvider: BillingPr
                 val noAdsPurchase =
                     purchases.find { purchase -> purchase.products.contains(NO_ADS_PRODUCT_ID) }
                 val acknowledged = noAdsPurchase?.acknowledgeIfNotAlready(this)
-                send(acknowledged)
+                send(acknowledged ?: false)
             }
         }
 
@@ -66,6 +62,6 @@ class NoAdsInteractor @Inject constructor(private val billingProvider: BillingPr
                 billingClient.handlePurchasedItems(billingResult, purchases)
             }
         }
-    }
+    }.shareIn(GlobalScope, SharingStarted.Eagerly, 1)
 
 }
