@@ -8,7 +8,9 @@ import kotlinx.coroutines.channels.awaitClose
 import kotlinx.coroutines.flow.*
 import kotlinx.coroutines.launch
 import javax.inject.Inject
+import javax.inject.Singleton
 
+@Singleton
 class BillingProvider @Inject constructor(@ApplicationContext context: Context) {
 
     data class PurchasesUpdatedEvent(
@@ -21,7 +23,7 @@ class BillingProvider @Inject constructor(@ApplicationContext context: Context) 
 
     val billingClient = callbackFlow {
 
-        val billingClient = BillingClient.newBuilder(context)
+        val client = BillingClient.newBuilder(context)
             .setListener { billingResult, purchases ->
                 launch {
                     _purchasesUpdatedFlow.emit(
@@ -35,7 +37,7 @@ class BillingProvider @Inject constructor(@ApplicationContext context: Context) 
         val billingClientStateListener = object : BillingClientStateListener {
             override fun onBillingSetupFinished(billingResult: BillingResult) {
                 if (billingResult.responseCode == BillingClient.BillingResponseCode.OK) {
-                    trySend(billingClient)
+                    trySend(client)
                 }
             }
 
@@ -44,9 +46,9 @@ class BillingProvider @Inject constructor(@ApplicationContext context: Context) 
             }
         }
 
-        billingClient.startConnection(billingClientStateListener)
+        client.startConnection(billingClientStateListener)
 
-        awaitClose { billingClient.endConnection() }
+        awaitClose { client.endConnection() }
     }.stateIn(GlobalScope, SharingStarted.Eagerly, null)
 
 }

@@ -16,6 +16,10 @@ import com.titaniel.chesscoordinatetrainer.billing.BillingProvider
 import com.titaniel.chesscoordinatetrainer.ui.screens.TrainerWrapper
 import com.titaniel.chesscoordinatetrainer.ui.theme.ChessCoordinateTrainerTheme
 import dagger.hilt.android.AndroidEntryPoint
+import kotlinx.coroutines.GlobalScope
+import kotlinx.coroutines.coroutineScope
+import kotlinx.coroutines.flow.collect
+import kotlinx.coroutines.launch
 import javax.inject.Inject
 
 @AndroidEntryPoint

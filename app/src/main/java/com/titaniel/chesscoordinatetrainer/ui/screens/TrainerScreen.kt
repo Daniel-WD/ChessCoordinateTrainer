@@ -14,10 +14,7 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import androidx.lifecycle.AndroidViewModel
-import androidx.lifecycle.LiveData
-import androidx.lifecycle.MutableLiveData
-import androidx.lifecycle.viewModelScope
+import androidx.lifecycle.*
 import androidx.lifecycle.viewmodel.compose.viewModel
 import com.android.billingclient.api.BillingResult
 import com.android.billingclient.api.ProductDetails
@@ -86,14 +83,15 @@ class TrainerViewModel @Inject constructor(
 
     private var wrongTileCount = 0
 
-    private val _noAdsProductDetails = MutableLiveData<ProductDetails?>(null)
-    val noAdsProductDetails: LiveData<ProductDetails?> = _noAdsProductDetails
+    val noAdsProductDetails: LiveData<ProductDetails?> = noAdsInteractor.noAdsProductDetails.asLiveData()
 
     init {
         refreshSearchedTile()
         viewModelScope.launch {
             _nextInterstitial.value = interstitialFlow.first()
-            noAdsInteractor.noAdsProductDetails.collectLatest { _noAdsProductDetails.value = it }
+            noAdsInteractor.isPurchased.collect {
+                print(it)
+            }
         }
     }
 
