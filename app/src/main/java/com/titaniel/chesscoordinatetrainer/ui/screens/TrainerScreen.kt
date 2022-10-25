@@ -180,7 +180,7 @@ fun TrainerWrapper(
 ) {
 
     val searchedTile by viewModel.searchedTile.observeAsState("")
-    val frontColor by viewModel.frontColor.observeAsState(ChessColor.BLACK)
+    val frontColor by viewModel.frontColor.observeAsState(ChessColor.WHITE)
     val feedbackDialogOpen by viewModel.feedbackDialogOpen.observeAsState(false)
     val thankYouDialogOpen by viewModel.thankYouDialogOpen.observeAsState(false)
     val showCoordinateRulers by viewModel.showCoordinateRulers.observeAsState(false)
