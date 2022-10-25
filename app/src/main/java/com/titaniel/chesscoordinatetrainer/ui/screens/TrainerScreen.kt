@@ -116,7 +116,7 @@ class TrainerViewModel @Inject constructor(
             refreshSearchedTile()
         } else {
             wrongTileCount += 1
-            if (wrongTileCount > FAILURE_AD_THRESHOLD) {
+            if (wrongTileCount > FAILURE_AD_THRESHOLD && noAdsPurchased.value == false) {
                 _showInterstitial.value = true
                 wrongTileCount = 0
             }
