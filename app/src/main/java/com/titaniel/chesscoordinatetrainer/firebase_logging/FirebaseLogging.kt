@@ -27,6 +27,8 @@ class FirebaseLogging @Inject constructor(@ApplicationContext context: Context) 
         private const val EVENT_FEEDBACK_DIALOG_DISMISS = "feedback_dialog_dismiss"
         private const val PARAM_NOTATION = "notation"
         private const val PARAM_MESSAGE = "message"
+        private const val EVENT_TRIGGER_INTERSTITIAL = "trigger_interstitial"
+        private const val EVENT_PURCHASE_NO_ADS_CLICK = "purchase_no_ads_click"
 
     }
 
@@ -34,6 +36,14 @@ class FirebaseLogging @Inject constructor(@ApplicationContext context: Context) 
 
     init {
         firebaseAnalytics.setAnalyticsCollectionEnabled(BuildConfig.DEBUG.not())
+    }
+
+    fun logTriggerInterstitial() {
+        firebaseAnalytics.logEvent(EVENT_TRIGGER_INTERSTITIAL, null)
+    }
+
+    fun logPurchaseNoAdsClick() {
+        firebaseAnalytics.logEvent(EVENT_PURCHASE_NO_ADS_CLICK, null)
     }
 
     fun logTileClicked(notation: String, correct: Boolean) {
