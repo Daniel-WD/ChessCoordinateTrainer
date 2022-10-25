@@ -3,6 +3,7 @@ package com.titaniel.chesscoordinatetrainer.firebase_logging
 import android.content.Context
 import com.google.firebase.analytics.FirebaseAnalytics
 import com.google.firebase.analytics.ktx.logEvent
+import com.titaniel.chesscoordinatetrainer.BuildConfig
 import com.titaniel.chesscoordinatetrainer.ui.board.ChessColor
 import dagger.hilt.android.qualifiers.ApplicationContext
 import javax.inject.Inject
@@ -30,6 +31,10 @@ class FirebaseLogging @Inject constructor(@ApplicationContext context: Context) 
     }
 
     private val firebaseAnalytics = FirebaseAnalytics.getInstance(context)
+
+    init {
+        firebaseAnalytics.setAnalyticsCollectionEnabled(BuildConfig.DEBUG.not())
+    }
 
     fun logTileClicked(notation: String, correct: Boolean) {
         firebaseAnalytics.logEvent(if (correct) EVENT_TILE_CLICKED_CORRECTLY else EVENT_TILE_CLICKED_INCORRECTLY) {
