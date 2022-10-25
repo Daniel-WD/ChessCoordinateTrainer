@@ -9,10 +9,4 @@
     <string name="feedback_hint">I want…</string>
     <string name="feedback_no_ads">No ads</string>
     <string name="feedback_no_ads_with_price">No ads %s</string>
-
-    <string name="admob_app_id">ca-app-pub-4393606874708671~4568160424</string>
-    <string name="banner_ad_id">ca-app-pub-4393606874708671/4968395921</string>
-<!--    <string name="banner_test_ad_id">ca-app-pub-3940256099942544/6300978111</string>-->
-    <string name="interstitial_ad_id">ca-app-pub-4393606874708671/9657793437</string>
-<!--    <string name="interstitial_test_ad_id">ca-app-pub-3940256099942544/1033173712</string>-->
 </resources>
