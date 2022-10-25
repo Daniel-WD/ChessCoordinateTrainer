@@ -46,7 +46,7 @@ import javax.inject.Inject
 @HiltViewModel
 class TrainerViewModel @Inject constructor(
     private val feedbackManager: FeedbackManager,
-    private val firebaseLogging: FirebaseLogging,
+    val firebaseLogging: FirebaseLogging,
     private val noAdsInteractor: NoAdsInteractor,
     app: Application
 ) : AndroidViewModel(app) {
@@ -119,6 +119,7 @@ class TrainerViewModel @Inject constructor(
             if (wrongTileCount > FAILURE_AD_THRESHOLD && noAdsPurchased.value == false) {
                 _showInterstitial.value = true
                 wrongTileCount = 0
+                firebaseLogging.logTriggerInterstitial()
             }
         }
         firebaseLogging.logTileClicked(notation, correct)
@@ -204,7 +205,8 @@ fun TrainerWrapper(
         viewModel::onShowPiecesChange,
         noAdsPurchased,
         purchasableAdProduct,
-        startPurchaseFlow
+        startPurchaseFlow,
+        viewModel.firebaseLogging
     )
 
     val showInterstitial by viewModel.showInterstitial.observeAsState(false)
@@ -238,7 +240,8 @@ fun TrainerScreen(
     onShowPiecesChange: () -> Unit,
     noAdsPurchased: Boolean,
     purchasableAdProduct: ProductDetails?,
-    startPurchaseFlow: (ProductDetails) -> BillingResult?
+    startPurchaseFlow: (ProductDetails) -> BillingResult?,
+    firebaseLogging: FirebaseLogging
 ) {
 
     val iconTint = MaterialTheme.colors.onBackground.copy(alpha = 0.5f)
@@ -338,7 +341,10 @@ fun TrainerScreen(
             onDismiss = onDismissFeedbackDialog,
             noAdsPurchased = noAdsPurchased,
             purchasableAdProduct = purchasableAdProduct,
-            purchaseNoAds = { startPurchaseFlow(it) }
+            purchaseNoAds = {
+                startPurchaseFlow(it)
+                firebaseLogging.logPurchaseNoAdsClick()
+            }
         )
     }
 
@@ -348,27 +354,27 @@ fun TrainerScreen(
 
 }
 
-@Preview(showBackground = true, widthDp = 360, heightDp = 640)
-@Composable
-fun TrainerPreview() {
-    ChessCoordinateTrainerTheme {
-        TrainerScreen(
-            "a4",
-            ChessColor.BLACK,
-            onTileClicked = {},
-            feedbackDialogOpen = false,
-            onDismissFeedbackDialog = {},
-            onShowFeedbackDialog = {},
-            onConfirmFeedback = {},
-            thankYouDialogOpen = false,
-            onRotationChange = {},
-            showCoordinateRulers = true,
-            onShowCoordinateRulersChange = {},
-            showPieces = false,
-            onShowPiecesChange = {},
-            purchasableAdProduct = null,
-            startPurchaseFlow = { null },
-            noAdsPurchased = true
-        )
-    }
-}
+//@Preview(showBackground = true, widthDp = 360, heightDp = 640)
+//@Composable
+//fun TrainerPreview() {
+////    ChessCoordinateTrainerTheme {
+////        TrainerScreen(
+////            "a4",
+////            ChessColor.BLACK,
+////            onTileClicked = {},
+////            feedbackDialogOpen = false,
+////            onDismissFeedbackDialog = {},
+////            onShowFeedbackDialog = {},
+////            onConfirmFeedback = {},
+////            thankYouDialogOpen = false,
+////            onRotationChange = {},
+////            showCoordinateRulers = true,
+////            onShowCoordinateRulersChange = {},
+////            showPieces = false,
+////            onShowPiecesChange = {},
+////            purchasableAdProduct = null,
+////            startPurchaseFlow = { null },
+////            noAdsPurchased = true
+////        )
+////    }
+//}
