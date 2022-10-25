@@ -3,6 +3,8 @@ package com.titaniel.chesscoordinatetrainer.billing
 import android.content.Context
 import com.android.billingclient.api.*
 import dagger.hilt.android.qualifiers.ApplicationContext
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.GlobalScope
 import kotlinx.coroutines.channels.awaitClose
 import kotlinx.coroutines.flow.*
@@ -12,6 +14,8 @@ import javax.inject.Singleton
 
 @Singleton
 class BillingProvider @Inject constructor(@ApplicationContext context: Context) {
+
+    val billingScope = CoroutineScope(Dispatchers.Default)
 
     data class PurchasesUpdatedEvent(
         val billingResult: BillingResult,
@@ -49,6 +53,6 @@ class BillingProvider @Inject constructor(@ApplicationContext context: Context) 
         client.startConnection(billingClientStateListener)
 
         awaitClose { client.endConnection() }
-    }.stateIn(GlobalScope, SharingStarted.Eagerly, null)
+    }.stateIn(billingScope, SharingStarted.Eagerly, null)
 
 }
