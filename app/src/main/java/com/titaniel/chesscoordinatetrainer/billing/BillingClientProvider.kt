@@ -5,7 +5,6 @@ import com.android.billingclient.api.*
 import dagger.hilt.android.qualifiers.ApplicationContext
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.GlobalScope
 import kotlinx.coroutines.channels.awaitClose
 import kotlinx.coroutines.flow.*
 import kotlinx.coroutines.launch
@@ -13,9 +12,9 @@ import javax.inject.Inject
 import javax.inject.Singleton
 
 @Singleton
-class BillingProvider @Inject constructor(@ApplicationContext context: Context) {
+class BillingClientProvider @Inject constructor(@ApplicationContext context: Context) {
 
-    val billingScope = CoroutineScope(Dispatchers.Default)
+    private val billingScope = CoroutineScope(Dispatchers.Default)
 
     data class PurchasesUpdatedEvent(
         val billingResult: BillingResult,

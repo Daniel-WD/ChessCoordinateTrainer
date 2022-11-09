@@ -1,10 +1,9 @@
 package com.titaniel.chesscoordinatetrainer.no_ads
 
 import com.android.billingclient.api.*
-import com.titaniel.chesscoordinatetrainer.billing.BillingProvider
+import com.titaniel.chesscoordinatetrainer.billing.BillingClientProvider
 import com.titaniel.chesscoordinatetrainer.billing.acknowledgeIfNotAlready
 import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.GlobalScope
 import kotlinx.coroutines.flow.*
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
@@ -12,7 +11,7 @@ import javax.inject.Inject
 import javax.inject.Singleton
 
 @Singleton
-class NoAdsInteractor @Inject constructor(private val billingProvider: BillingProvider) {
+class NoAdsInteractor @Inject constructor(private val billingProvider: BillingClientProvider) {
 
     companion object {
         const val NO_ADS_PRODUCT_ID = "no_ads" // in strings
@@ -31,10 +30,11 @@ class NoAdsInteractor @Inject constructor(private val billingProvider: BillingPr
                     )
                 )
                 val productDetailsResult = withContext(Dispatchers.IO) { client.queryProductDetails(params.build()) }
+                //todo
                 send(productDetailsResult.productDetailsList?.get(0))
             } ?: send(null)
         }
-    }.shareIn(billingProvider.billingScope, SharingStarted.Eagerly, 1)
+    }//.shareIn(billingProvider.billingScope, SharingStarted.Eagerly, 1)
 
     val isPurchased = channelFlow {
         suspend fun BillingClient.handlePurchasedItems(
@@ -62,6 +62,6 @@ class NoAdsInteractor @Inject constructor(private val billingProvider: BillingPr
                 billingClient.handlePurchasedItems(billingResult, purchases)
             }
         }
-    }.shareIn(billingProvider.billingScope, SharingStarted.Eagerly, 1)
+    }//.shareIn(billingProvider.billingScope, SharingStarted.Eagerly, 1)
 
 }

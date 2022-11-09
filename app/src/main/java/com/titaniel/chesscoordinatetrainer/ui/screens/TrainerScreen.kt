@@ -7,8 +7,8 @@ import androidx.compose.material.IconButton
 import androidx.compose.material.MaterialTheme
 import androidx.compose.material.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
-import androidx.compose.runtime.livedata.observeAsState
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.painterResource
@@ -33,9 +33,9 @@ import com.titaniel.chesscoordinatetrainer.ui.dialogs.FeedbackDialog
 import com.titaniel.chesscoordinatetrainer.ui.dialogs.ThankYouDialog
 import com.titaniel.chesscoordinatetrainer.ui.interstitialFlow
 import dagger.hilt.android.lifecycle.HiltViewModel
+import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.delay
-import kotlinx.coroutines.flow.emptyFlow
-import kotlinx.coroutines.flow.first
+import kotlinx.coroutines.flow.*
 import kotlinx.coroutines.launch
 import javax.inject.Inject
 
@@ -55,29 +55,29 @@ class TrainerViewModel @Inject constructor(
         private const val THANK_YOU_DIALOG_SHOW_DURATION = 1000L
     }
 
-    private val _searchedTile = MutableLiveData<String>()
-    val searchedTile: LiveData<String> = _searchedTile
+    private val _searchedTile = MutableStateFlow("") // todo can be null
+    val searchedTile: StateFlow<String> = _searchedTile
 
-    private val _frontColor = MutableLiveData(ChessColor.WHITE)
-    val frontColor: LiveData<ChessColor> = _frontColor
+    private val _frontColor = MutableStateFlow(ChessColor.WHITE)
+    val frontColor: StateFlow<ChessColor> = _frontColor
 
-    private val _showCoordinateRulers = MutableLiveData(false)
-    val showCoordinateRulers: LiveData<Boolean> = _showCoordinateRulers
+    private val _showCoordinateRulers = MutableStateFlow(false)
+    val showCoordinateRulers: StateFlow<Boolean> = _showCoordinateRulers
 
-    private val _showPieces = MutableLiveData(true)
-    val showPieces: LiveData<Boolean> = _showPieces
+    private val _showPieces = MutableStateFlow(true)
+    val showPieces: StateFlow<Boolean> = _showPieces
 
-    private val _feedbackDialogOpen = MutableLiveData(false)
-    val feedbackDialogOpen: LiveData<Boolean> = _feedbackDialogOpen
+    private val _feedbackDialogOpen = MutableStateFlow(false)
+    val feedbackDialogOpen: StateFlow<Boolean> = _feedbackDialogOpen
 
-    private val _thankYouDialogOpen = MutableLiveData(false)
-    val thankYouDialogOpen: LiveData<Boolean> = _thankYouDialogOpen
+    private val _thankYouDialogOpen = MutableStateFlow(false)
+    val thankYouDialogOpen: StateFlow<Boolean> = _thankYouDialogOpen
 
-    private val _showInterstitial = MutableLiveData(false)
-    val showInterstitial: LiveData<Boolean> = _showInterstitial
+    private val _showInterstitial = MutableStateFlow(false)
+    val showInterstitial: StateFlow<Boolean> = _showInterstitial
 
-    private val _nextInterstitial = MutableLiveData<InterstitialAd?>(null)
-    val nextInterstitial: LiveData<InterstitialAd?> = _nextInterstitial
+    private val _nextInterstitial = MutableStateFlow<InterstitialAd?>(null)
+    val nextInterstitial: StateFlow<InterstitialAd?> = _nextInterstitial
 
     private val interstitialFlow =
         interstitialFlow(app, app.getString(R.string.interstitial_ad_id))
@@ -92,22 +92,23 @@ class TrainerViewModel @Inject constructor(
     private val showCorrectAd
         get() = firebaseConfig.showCorrectAds && correctTileCount >= firebaseConfig.correctAdThreshold
     private val showAds
-        get() = noAdsPurchased.value != true
+        get() = noAdsPurchased.value.not()
 
-    val noAdsPurchased = noAdsInteractor.isPurchased.asLiveData()
+    val noAdsPurchased =
+        noAdsInteractor.isPurchased.stateIn(viewModelScope, SharingStarted.Lazily, false)
 
+    @OptIn(ExperimentalCoroutinesApi::class)
     val purchasableAdProduct =
-        noAdsPurchased.switchMap { purchased -> if (purchased.not()) noAdsInteractor.productDetails.asLiveData() else emptyFlow<ProductDetails>().asLiveData() }
+        noAdsPurchased.flatMapLatest { purchased -> if (purchased.not()) noAdsInteractor.productDetails else emptyFlow() }
+            .stateIn(viewModelScope, SharingStarted.Eagerly, null)
 
-    val noAdsPrice = purchasableAdProduct.map { purchasableAdProduct.value?.oneTimePurchaseOfferDetails?.formattedPrice }
+    val noAdsPrice = purchasableAdProduct.map { it?.oneTimePurchaseOfferDetails?.formattedPrice }
+        .stateIn(viewModelScope, SharingStarted.Eagerly, null) // todo necessary just for default value?
 
     init {
         refreshSearchedTile()
         viewModelScope.launch {
             _nextInterstitial.value = interstitialFlow.first()
-            noAdsInteractor.isPurchased.collect {
-                print(it)
-            }
         }
     }
 
@@ -199,14 +200,14 @@ fun TrainerWrapper(
     startPurchaseFlow: (ProductDetails) -> BillingResult?
 ) {
 
-    val searchedTile by viewModel.searchedTile.observeAsState("")
-    val frontColor by viewModel.frontColor.observeAsState(ChessColor.WHITE)
-    val feedbackDialogOpen by viewModel.feedbackDialogOpen.observeAsState(false)
-    val thankYouDialogOpen by viewModel.thankYouDialogOpen.observeAsState(false)
-    val showCoordinateRulers by viewModel.showCoordinateRulers.observeAsState(false)
-    val showPieces by viewModel.showPieces.observeAsState(true)
-    val noAdsPurchased by viewModel.noAdsPurchased.observeAsState(false)
-    val noAdsPrice by viewModel.noAdsPrice.observeAsState()
+    val searchedTile by viewModel.searchedTile.collectAsState()
+    val frontColor by viewModel.frontColor.collectAsState()
+    val feedbackDialogOpen by viewModel.feedbackDialogOpen.collectAsState()
+    val thankYouDialogOpen by viewModel.thankYouDialogOpen.collectAsState()
+    val showCoordinateRulers by viewModel.showCoordinateRulers.collectAsState()
+    val showPieces by viewModel.showPieces.collectAsState()
+    val noAdsPurchased by viewModel.noAdsPurchased.collectAsState()
+    val noAdsPrice by viewModel.noAdsPrice.collectAsState()
 
     fun purchaseNoAds() {
         viewModel.purchasableAdProduct.value?.let(startPurchaseFlow)
@@ -233,8 +234,8 @@ fun TrainerWrapper(
         viewModel.showNoAdsButton
     )
 
-    val showInterstitial by viewModel.showInterstitial.observeAsState(false)
-    val nextInterstitial by viewModel.nextInterstitial.observeAsState()
+    val showInterstitial by viewModel.showInterstitial.collectAsState()
+    val nextInterstitial by viewModel.nextInterstitial.collectAsState()
 
     if (showInterstitial) {
         nextInterstitial?.let {

@@ -14,20 +14,17 @@ import com.google.android.gms.ads.MobileAds
 import com.google.android.gms.ads.interstitial.InterstitialAd
 import com.google.firebase.ktx.Firebase
 import com.google.firebase.remoteconfig.ktx.remoteConfig
-import com.titaniel.chesscoordinatetrainer.billing.BillingProvider
+import com.titaniel.chesscoordinatetrainer.billing.BillingClientProvider
 import com.titaniel.chesscoordinatetrainer.ui.screens.TrainerWrapper
 import com.titaniel.chesscoordinatetrainer.ui.theme.ChessCoordinateTrainerTheme
 import dagger.hilt.android.AndroidEntryPoint
-import kotlinx.coroutines.GlobalScope
-import kotlinx.coroutines.delay
-import kotlinx.coroutines.launch
 import javax.inject.Inject
 
 @AndroidEntryPoint
 class MainActivity : ComponentActivity() {
 
     @Inject
-    lateinit var billingProvider: BillingProvider
+    lateinit var billingProvider: BillingClientProvider
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
