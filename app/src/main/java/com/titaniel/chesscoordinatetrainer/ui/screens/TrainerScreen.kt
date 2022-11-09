@@ -24,6 +24,7 @@ import com.android.billingclient.api.ProductDetails
 import com.google.android.gms.ads.interstitial.InterstitialAd
 import com.titaniel.chesscoordinatetrainer.R
 import com.titaniel.chesscoordinatetrainer.feedback.FeedbackManager
+import com.titaniel.chesscoordinatetrainer.firebase_config.FirebaseConfig
 import com.titaniel.chesscoordinatetrainer.firebase_logging.FirebaseLogging
 import com.titaniel.chesscoordinatetrainer.no_ads.NoAdsInteractor
 import com.titaniel.chesscoordinatetrainer.ui.InterstitialAd
@@ -47,13 +48,13 @@ import javax.inject.Inject
 class TrainerViewModel @Inject constructor(
     private val feedbackManager: FeedbackManager,
     val firebaseLogging: FirebaseLogging,
+    private val firebaseConfig: FirebaseConfig,
     private val noAdsInteractor: NoAdsInteractor,
     app: Application
 ) : AndroidViewModel(app) {
 
     companion object {
         private const val THANK_YOU_DIALOG_SHOW_DURATION = 1000L
-        private const val FAILURE_AD_THRESHOLD = 10
     }
 
     private val _searchedTile = MutableLiveData<String>()
@@ -116,7 +117,7 @@ class TrainerViewModel @Inject constructor(
             refreshSearchedTile()
         } else {
             wrongTileCount += 1
-            if (wrongTileCount > FAILURE_AD_THRESHOLD && noAdsPurchased.value != true) {
+            if (wrongTileCount >= firebaseConfig.failureAdCount && noAdsPurchased.value != true) {
                 _showInterstitial.value = true
                 wrongTileCount = 0
                 firebaseLogging.logTriggerInterstitial()
