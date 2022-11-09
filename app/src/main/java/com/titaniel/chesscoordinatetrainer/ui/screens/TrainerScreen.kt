@@ -99,6 +99,8 @@ class TrainerViewModel @Inject constructor(
     val purchasableAdProduct =
         noAdsPurchased.switchMap { purchased -> if (purchased.not()) noAdsInteractor.productDetails.asLiveData() else emptyFlow<ProductDetails>().asLiveData() }
 
+    val noAdsPrice = purchasableAdProduct.map { purchasableAdProduct.value?.oneTimePurchaseOfferDetails?.formattedPrice }
+
     init {
         refreshSearchedTile()
         viewModelScope.launch {
@@ -204,7 +206,12 @@ fun TrainerWrapper(
     val showCoordinateRulers by viewModel.showCoordinateRulers.observeAsState(false)
     val showPieces by viewModel.showPieces.observeAsState(true)
     val noAdsPurchased by viewModel.noAdsPurchased.observeAsState(false)
-    val purchasableAdProduct by viewModel.purchasableAdProduct.observeAsState()
+    val noAdsPrice by viewModel.noAdsPrice.observeAsState()
+
+    fun purchaseNoAds() {
+        viewModel.purchasableAdProduct.value?.let(startPurchaseFlow)
+        viewModel.firebaseLogging.logPurchaseNoAdsClick()
+    }
 
     TrainerScreen(
         searchedTile,
@@ -221,9 +228,8 @@ fun TrainerWrapper(
         showPieces,
         viewModel::onShowPiecesChange,
         noAdsPurchased,
-        purchasableAdProduct,
-        startPurchaseFlow,
-        viewModel.firebaseLogging, // todo
+        noAdsPrice,
+        ::purchaseNoAds,
         viewModel.showNoAdsButton
     )
 
@@ -257,9 +263,8 @@ fun TrainerScreen(
     showPieces: Boolean,
     onShowPiecesChange: () -> Unit,
     noAdsPurchased: Boolean,
-    purchasableAdProduct: ProductDetails?,
-    startPurchaseFlow: (ProductDetails) -> BillingResult?,
-    firebaseLogging: FirebaseLogging,
+    noAdsPrice: String?,
+    onPurchaseNoAdsClick: () -> Unit,
     showNoAdsButton: Boolean
 ) {
 
@@ -360,11 +365,8 @@ fun TrainerScreen(
             onConfirm = onConfirmFeedback,
             onDismiss = onDismissFeedbackDialog,
             noAdsPurchased = noAdsPurchased,
-            purchasableAdProduct = purchasableAdProduct,
-            purchaseNoAds = {
-                startPurchaseFlow(it)
-                firebaseLogging.logPurchaseNoAdsClick()
-            },
+            noAdsPrice = noAdsPrice,
+            onPurchaseNoAdsClick = onPurchaseNoAdsClick,
             showNoAdsButton = showNoAdsButton
         )
     }
@@ -374,28 +376,3 @@ fun TrainerScreen(
     }
 
 }
-
-//@Preview(showBackground = true, widthDp = 360, heightDp = 640)
-//@Composable
-//fun TrainerPreview() {
-////    ChessCoordinateTrainerTheme {
-////        TrainerScreen(
-////            "a4",
-////            ChessColor.BLACK,
-////            onTileClicked = {},
-////            feedbackDialogOpen = false,
-////            onDismissFeedbackDialog = {},
-////            onShowFeedbackDialog = {},
-////            onConfirmFeedback = {},
-////            thankYouDialogOpen = false,
-////            onRotationChange = {},
-////            showCoordinateRulers = true,
-////            onShowCoordinateRulersChange = {},
-////            showPieces = false,
-////            onShowPiecesChange = {},
-////            purchasableAdProduct = null,
-////            startPurchaseFlow = { null },
-////            noAdsPurchased = true
-////        )
-////    }
-//}

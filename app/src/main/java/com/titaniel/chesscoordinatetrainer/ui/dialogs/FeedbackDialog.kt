@@ -15,7 +15,6 @@ import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import com.android.billingclient.api.ProductDetails
 import com.titaniel.chesscoordinatetrainer.R
 
 @Composable
@@ -24,8 +23,8 @@ fun FeedbackDialog(
     onDismiss: () -> Unit,
     noAdsPurchased: Boolean,
     showNoAdsButton: Boolean,
-    purchasableAdProduct: ProductDetails?,
-    purchaseNoAds: (ProductDetails) -> Unit
+    noAdsPrice: String?,
+    onPurchaseNoAdsClick: () -> Unit
 ) {
     var feedbackText by remember { mutableStateOf("") }
 
@@ -46,14 +45,23 @@ fun FeedbackDialog(
                     enabled = false
                 ) {
                     Text(text = stringResource(R.string.feedback_no_ads).uppercase())
-                    Icon(modifier = Modifier.padding(start = 4.dp).size(20.dp), painter = painterResource(id = R.drawable.ic_baseline_check_24), contentDescription = null)
+                    Icon(
+                        modifier = Modifier
+                            .padding(start = 4.dp)
+                            .size(20.dp),
+                        painter = painterResource(id = R.drawable.ic_baseline_check_24),
+                        contentDescription = null
+                    )
                 }
-            } else if(showNoAdsButton) {
-                purchasableAdProduct?.oneTimePurchaseOfferDetails?.formattedPrice?.let { price ->
-                    TextButton(
-                        onClick = { purchaseNoAds(purchasableAdProduct) }
-                    ) {
-                        Text(text = stringResource(R.string.feedback_no_ads_with_price, price).uppercase())
+            } else if (showNoAdsButton) {
+                noAdsPrice?.let { price ->
+                    TextButton(onClick = onPurchaseNoAdsClick) {
+                        Text(
+                            text = stringResource(
+                                R.string.feedback_no_ads_with_price,
+                                price
+                            ).uppercase()
+                        )
                     }
                 }
             }
