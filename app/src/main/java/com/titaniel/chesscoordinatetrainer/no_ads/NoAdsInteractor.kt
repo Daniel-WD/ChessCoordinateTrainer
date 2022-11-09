@@ -14,7 +14,7 @@ import javax.inject.Singleton
 class NoAdsInteractor @Inject constructor(private val billingProvider: BillingClientProvider) {
 
     companion object {
-        const val NO_ADS_PRODUCT_ID = "no_ads" // in strings
+        const val NO_ADS_PRODUCT_ID = "no_ads" // todo in strings
     }
 
     val productDetails = channelFlow {
@@ -30,8 +30,7 @@ class NoAdsInteractor @Inject constructor(private val billingProvider: BillingCl
                     )
                 )
                 val productDetailsResult = withContext(Dispatchers.IO) { client.queryProductDetails(params.build()) }
-                //todo
-                send(productDetailsResult.productDetailsList?.get(0))
+                send(productDetailsResult.productDetailsList?.getOrNull(0))
             } ?: send(null)
         }
     }//.shareIn(billingProvider.billingScope, SharingStarted.Eagerly, 1)
