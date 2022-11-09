@@ -23,6 +23,7 @@ fun FeedbackDialog(
     onConfirm: (String) -> Unit,
     onDismiss: () -> Unit,
     noAdsPurchased: Boolean,
+    showNoAdsButton: Boolean,
     purchasableAdProduct: ProductDetails?,
     purchaseNoAds: (ProductDetails) -> Unit
 ) {
@@ -47,7 +48,7 @@ fun FeedbackDialog(
                     Text(text = stringResource(R.string.feedback_no_ads).uppercase())
                     Icon(modifier = Modifier.padding(start = 4.dp).size(20.dp), painter = painterResource(id = R.drawable.ic_baseline_check_24), contentDescription = null)
                 }
-            } else {
+            } else if(showNoAdsButton) {
                 purchasableAdProduct?.oneTimePurchaseOfferDetails?.formattedPrice?.let { price ->
                     TextButton(
                         onClick = { purchaseNoAds(purchasableAdProduct) }

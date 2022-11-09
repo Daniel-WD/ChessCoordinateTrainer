@@ -1,7 +1,23 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <defaults>
   <entry>
-    <key>FailureAdCount</key>
+    <key>correct_ad_threshold</key>
+    <value>20</value>
+  </entry>
+  <entry>
+    <key>incorrect_ad_threshold</key>
     <value>10</value>
+  </entry>
+  <entry>
+    <key>show_correct_ads</key>
+    <value>false</value>
+  </entry>
+  <entry>
+    <key>show_incorrect_ads</key>
+    <value>true</value>
+  </entry>
+  <entry>
+    <key>show_no_ads_button</key>
+    <value>false</value>
   </entry>
 </defaults>

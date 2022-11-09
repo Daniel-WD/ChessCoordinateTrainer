@@ -14,7 +14,6 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
-import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.lifecycle.*
@@ -33,7 +32,6 @@ import com.titaniel.chesscoordinatetrainer.ui.board.ChessColor
 import com.titaniel.chesscoordinatetrainer.ui.dialogs.FeedbackDialog
 import com.titaniel.chesscoordinatetrainer.ui.dialogs.ThankYouDialog
 import com.titaniel.chesscoordinatetrainer.ui.interstitialFlow
-import com.titaniel.chesscoordinatetrainer.ui.theme.ChessCoordinateTrainerTheme
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.emptyFlow
@@ -84,7 +82,17 @@ class TrainerViewModel @Inject constructor(
     private val interstitialFlow =
         interstitialFlow(app, app.getString(R.string.interstitial_ad_id))
 
-    private var wrongTileCount = 0
+    val showNoAdsButton = firebaseConfig.showNoAdsButton
+
+    private var incorrectTileCount = 0
+    private var correctTileCount = 0
+
+    private val showIncorrectAd
+        get() = firebaseConfig.showIncorrectAds && incorrectTileCount >= firebaseConfig.incorrectAddThreshold
+    private val showCorrectAd
+        get() = firebaseConfig.showCorrectAds && correctTileCount >= firebaseConfig.correctAdThreshold
+    private val showAds
+        get() = noAdsPurchased.value != true
 
     val noAdsPurchased = noAdsInteractor.isPurchased.asLiveData()
 
@@ -115,11 +123,19 @@ class TrainerViewModel @Inject constructor(
         val correct = _searchedTile.value == notation
         if (correct) {
             refreshSearchedTile()
+            correctTileCount += 1
         } else {
-            wrongTileCount += 1
-            if (wrongTileCount >= firebaseConfig.failureAdCount && noAdsPurchased.value != true) {
+            incorrectTileCount += 1
+        }
+        when {
+            showAds && showIncorrectAd -> {
                 _showInterstitial.value = true
-                wrongTileCount = 0
+                incorrectTileCount = 0
+                firebaseLogging.logTriggerInterstitial()
+            }
+            showAds && showCorrectAd -> {
+                _showInterstitial.value = true
+                correctTileCount = 0
                 firebaseLogging.logTriggerInterstitial()
             }
         }
@@ -207,7 +223,8 @@ fun TrainerWrapper(
         noAdsPurchased,
         purchasableAdProduct,
         startPurchaseFlow,
-        viewModel.firebaseLogging
+        viewModel.firebaseLogging, // todo
+        viewModel.showNoAdsButton
     )
 
     val showInterstitial by viewModel.showInterstitial.observeAsState(false)
@@ -242,7 +259,8 @@ fun TrainerScreen(
     noAdsPurchased: Boolean,
     purchasableAdProduct: ProductDetails?,
     startPurchaseFlow: (ProductDetails) -> BillingResult?,
-    firebaseLogging: FirebaseLogging
+    firebaseLogging: FirebaseLogging,
+    showNoAdsButton: Boolean
 ) {
 
     val iconTint = MaterialTheme.colors.onBackground.copy(alpha = 0.5f)
@@ -338,14 +356,16 @@ fun TrainerScreen(
     }
 
     if (feedbackDialogOpen) {
-        FeedbackDialog(onConfirm = onConfirmFeedback,
+        FeedbackDialog(
+            onConfirm = onConfirmFeedback,
             onDismiss = onDismissFeedbackDialog,
             noAdsPurchased = noAdsPurchased,
             purchasableAdProduct = purchasableAdProduct,
             purchaseNoAds = {
                 startPurchaseFlow(it)
                 firebaseLogging.logPurchaseNoAdsClick()
-            }
+            },
+            showNoAdsButton = showNoAdsButton
         )
     }
 
