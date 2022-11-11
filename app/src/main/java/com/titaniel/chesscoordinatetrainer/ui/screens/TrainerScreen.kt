@@ -94,8 +94,7 @@ class TrainerViewModel @Inject constructor(
     private val showAds
         get() = noAdsPurchased.value.not()
 
-    val noAdsPurchased =
-        noAdsInteractor.isPurchased.stateIn(viewModelScope, SharingStarted.Lazily, false)
+    val noAdsPurchased = noAdsInteractor.isPurchased
 
     @OptIn(ExperimentalCoroutinesApi::class)
     val purchasableAdProduct =
