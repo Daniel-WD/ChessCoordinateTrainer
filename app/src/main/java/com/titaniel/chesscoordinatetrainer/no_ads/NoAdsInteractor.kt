@@ -33,7 +33,7 @@ class NoAdsInteractor @Inject constructor(private val billingProvider: BillingCl
                 send(productDetailsResult.productDetailsList?.getOrNull(0))
             } ?: send(null)
         }
-    }//.shareIn(billingProvider.billingScope, SharingStarted.Eagerly, 1)
+    }.stateIn(billingProvider.billingScope, SharingStarted.Lazily, null)
 
     val isPurchased = channelFlow {
         suspend fun BillingClient.handlePurchasedItems(
@@ -61,6 +61,6 @@ class NoAdsInteractor @Inject constructor(private val billingProvider: BillingCl
                 billingClient.handlePurchasedItems(billingResult, purchases)
             }
         }
-    }//.shareIn(billingProvider.billingScope, SharingStarted.Eagerly, 1)
+    }.stateIn(billingProvider.billingScope, SharingStarted.Eagerly, false)
 
 }

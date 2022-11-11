@@ -180,7 +180,7 @@ class TrainerViewModel @Inject constructor(
     }
 
     fun onShowPiecesChange() {
-        _showPieces.value?.not()?.let {
+        _showPieces.value.not().let {
             _showPieces.value = it
             firebaseLogging.logPiecesVisibilityChange(it)
         }

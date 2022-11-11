@@ -14,7 +14,7 @@ import javax.inject.Singleton
 @Singleton
 class BillingClientProvider @Inject constructor(@ApplicationContext context: Context) {
 
-    private val billingScope = CoroutineScope(Dispatchers.Default)
+    val billingScope = CoroutineScope(Dispatchers.Default)
 
     data class PurchasesUpdatedEvent(
         val billingResult: BillingResult,
