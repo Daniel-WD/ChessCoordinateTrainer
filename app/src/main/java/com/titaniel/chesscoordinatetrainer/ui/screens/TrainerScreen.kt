@@ -23,7 +23,7 @@ import com.android.billingclient.api.ProductDetails
 import com.google.android.gms.ads.interstitial.InterstitialAd
 import com.titaniel.chesscoordinatetrainer.R
 import com.titaniel.chesscoordinatetrainer.feedback.FeedbackManager
-import com.titaniel.chesscoordinatetrainer.firebase_config.FirebaseConfig
+import com.titaniel.chesscoordinatetrainer.firebase_config.AdsConfig
 import com.titaniel.chesscoordinatetrainer.firebase_logging.FirebaseLogging
 import com.titaniel.chesscoordinatetrainer.no_ads.NoAdsInteractor
 import com.titaniel.chesscoordinatetrainer.ui.InterstitialAd
@@ -46,7 +46,7 @@ import javax.inject.Inject
 class TrainerViewModel @Inject constructor(
     private val feedbackManager: FeedbackManager,
     val firebaseLogging: FirebaseLogging,
-    private val firebaseConfig: FirebaseConfig,
+    private val adsConfig: AdsConfig,
     private val noAdsInteractor: NoAdsInteractor,
     app: Application
 ) : AndroidViewModel(app) {
@@ -82,15 +82,15 @@ class TrainerViewModel @Inject constructor(
     private val interstitialFlow =
         interstitialFlow(app, app.getString(R.string.interstitial_ad_id))
 
-    val showNoAdsButton = firebaseConfig.showNoAdsButton
+    val showNoAdsButton = adsConfig.showNoAdsButton
 
     private var incorrectTileCount = 0
     private var correctTileCount = 0
 
     private val showIncorrectAd
-        get() = firebaseConfig.showIncorrectAds && incorrectTileCount >= firebaseConfig.incorrectAddThreshold
+        get() = adsConfig.showIncorrectAds && incorrectTileCount >= adsConfig.incorrectAddThreshold
     private val showCorrectAd
-        get() = firebaseConfig.showCorrectAds && correctTileCount >= firebaseConfig.correctAdThreshold
+        get() = adsConfig.showCorrectAds && correctTileCount >= adsConfig.correctAdThreshold
     private val showAds
         get() = noAdsPurchased.value.not()
 
@@ -354,8 +354,6 @@ fun TrainerScreen(
                     contentDescription = null
                 )
             }
-
-//            BannerAd(modifier = Modifier, id = stringResource(id = R.string.banner_ad_id))
         }
 
     }

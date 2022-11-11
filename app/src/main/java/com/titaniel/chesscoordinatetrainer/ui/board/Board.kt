@@ -20,27 +20,15 @@ import androidx.compose.ui.unit.dp
 import com.titaniel.chesscoordinatetrainer.R
 
 
-/**
- * Tile size
- */
 private val TILE_SIZE = 42.dp
 
-/**
- * Board border thickness
- */
 private val BORDER_THICKNESS = 6.dp
 
-/**
- * Chess color enum
- */
 enum class ChessColor {
     BLACK,
     WHITE
 }
 
-/**
- * Maps each piece notation to its respective icon
- */
 private val pieceIdByNotation = mapOf(
     "a1" to R.drawable.ic_rook_white,
     "b1" to R.drawable.ic_knight_white,

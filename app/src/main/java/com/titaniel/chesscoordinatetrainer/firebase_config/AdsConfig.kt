@@ -2,13 +2,12 @@ package com.titaniel.chesscoordinatetrainer.firebase_config
 
 import com.google.firebase.ktx.Firebase
 import com.google.firebase.remoteconfig.ktx.remoteConfig
-import com.google.firebase.remoteconfig.ktx.remoteConfigSettings
 import com.titaniel.chesscoordinatetrainer.R
 import javax.inject.Inject
 import javax.inject.Singleton
 
 @Singleton
-class FirebaseConfig @Inject constructor() {
+class AdsConfig @Inject constructor() {
 
     companion object {
         private const val CORRECT_AD_THRESHOLD = "correct_ad_threshold"
